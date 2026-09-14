@@ -3,6 +3,7 @@ import {
   MealPlanImportSchema,
   formatFriendlyValidationError,
 } from "@/schemas/meal-plan.schema";
+import { validateMealPlanJsonAction } from "@/lib/import/actions";
 import { getInitialSeedPlan } from "@/lib/seed-data";
 
 describe("JSON Schema Validation Tests", () => {
@@ -16,6 +17,13 @@ describe("JSON Schema Validation Tests", () => {
       expect(result.data.plan.days.length).toBe(7);
       expect(result.data.plan.days[0].meals.length).toBe(3);
     }
+  });
+
+  it("should reject invalid JSON syntax gracefully via validateMealPlanJsonAction", async () => {
+    const malformedJson = `{"version": "1.0", "plan": { unquoted: true, }`;
+    const res = await validateMealPlanJsonAction(malformedJson);
+    expect(res.valid).toBe(false);
+    expect(res.errors[0]).toContain("รูปแบบ JSON ไม่ถูกต้อง");
   });
 
   it("should fail validation if version is not 1.0", () => {
@@ -32,7 +40,32 @@ describe("JSON Schema Validation Tests", () => {
     }
   });
 
-  it("should fail validation and pinpoint missing ingredient amount", () => {
+  it("should fail validation if date format is not YYYY-MM-DD", () => {
+    const invalidDatePlan = getInitialSeedPlan("2026-09-14");
+    invalidDatePlan.plan.startDate = "14/09/2026";
+
+    const result = MealPlanImportSchema.safeParse(invalidDatePlan);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const friendly = formatFriendlyValidationError(result.error);
+      expect(friendly.some((msg) => msg.includes("YYYY-MM-DD"))).toBe(true);
+    }
+  });
+
+  it("should fail validation if required fields like plan name or meal title are missing", () => {
+    const missingNamePlan = JSON.parse(JSON.stringify(getInitialSeedPlan("2026-09-14"))) as Record<string, unknown>;
+    delete (missingNamePlan.plan as Record<string, unknown>).name;
+
+    const result = MealPlanImportSchema.safeParse(missingNamePlan);
+    expect(result.success).toBe(false);
+
+    const missingMealNamePlan = JSON.parse(JSON.stringify(getInitialSeedPlan("2026-09-14")));
+    delete missingMealNamePlan.plan.days[0].meals[0].name;
+    const resultMealName = MealPlanImportSchema.safeParse(missingMealNamePlan);
+    expect(resultMealName.success).toBe(false);
+  });
+
+  it("should fail validation and pinpoint missing or invalid ingredient amount", () => {
     const brokenPlan = getInitialSeedPlan("2026-09-14");
     // Set negative amount in day 1, meal 1, ingredient 1
     brokenPlan.plan.days[0].meals[0].ingredients[0].amount = -5;
@@ -45,15 +78,10 @@ describe("JSON Schema Validation Tests", () => {
     }
   });
 
-  it("should fail validation if date format is not YYYY-MM-DD", () => {
-    const invalidDatePlan = getInitialSeedPlan("2026-09-14");
-    invalidDatePlan.plan.startDate = "14/09/2026";
-
-    const result = MealPlanImportSchema.safeParse(invalidDatePlan);
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      const friendly = formatFriendlyValidationError(result.error);
-      expect(friendly.some((msg) => msg.includes("YYYY-MM-DD"))).toBe(true);
-    }
+  it("should reject payload exceeding 1MB limit", async () => {
+    const hugeString = "a".repeat(1024 * 1024 + 50);
+    const res = await validateMealPlanJsonAction(hugeString);
+    expect(res.valid).toBe(false);
+    expect(res.errors[0]).toContain("เกินขีดจำกัด 1 MB");
   });
 });

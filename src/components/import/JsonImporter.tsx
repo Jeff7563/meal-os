@@ -154,17 +154,17 @@ export function JsonImporter() {
           </div>
 
           {/* Stats Preview Card */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
               <span className="text-[10px] text-slate-400 block">ชื่อแผน</span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1" title={validationResult.stats.planName}>
                 {validationResult.stats.planName}
               </span>
             </div>
             <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
-              <span className="text-[10px] text-slate-400 block">วันที่เริ่มต้น</span>
+              <span className="text-[10px] text-slate-400 block">ช่วงวันที่ (เริ่ม - สิ้นสุด)</span>
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200 font-mono">
-                {validationResult.stats.startDate}
+                {validationResult.stats.startDate} ~ {validationResult.stats.endDate}
               </span>
             </div>
             <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
@@ -174,9 +174,15 @@ export function JsonImporter() {
               </span>
             </div>
             <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
-              <span className="text-[10px] text-slate-400 block">จำนวนมื้อรวม</span>
+              <span className="text-[10px] text-slate-400 block">จำนวนมื้อทั้งหมด</span>
               <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                 {validationResult.stats.mealsCount} มื้อ
+              </span>
+            </div>
+            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
+              <span className="text-[10px] text-slate-400 block">จำนวนวัตถุดิบทั้งหมด</span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                {validationResult.stats.ingredientsCount} รายการ
               </span>
             </div>
           </div>

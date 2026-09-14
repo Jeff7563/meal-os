@@ -5,16 +5,40 @@ import {
   getWeightLogs,
 } from "@/lib/repository";
 import { ProgressDashboard } from "@/components/progress/ProgressDashboard";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, AlertCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProgressPage() {
-  const [summary, profile, weightLogs] = await Promise.all([
-    getProgressSummary(),
-    getUserProfile(),
-    getWeightLogs(),
-  ]);
+  let summary;
+  let profile;
+  let weightLogs;
+  let errorMsg: string | null = null;
+
+  try {
+    const [s, p, w] = await Promise.all([
+      getProgressSummary(),
+      getUserProfile(),
+      getWeightLogs(),
+    ]);
+    summary = s;
+    profile = p;
+    weightLogs = w;
+  } catch (err: unknown) {
+    errorMsg = err instanceof Error ? err.message : "ไม่สามารถเชื่อมต่อฐานข้อมูลได้";
+  }
+
+  if (errorMsg || !summary || !profile || !weightLogs) {
+    return (
+      <div className="max-w-md mx-auto py-12 px-4 text-center space-y-4">
+        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
+        <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+          เกิดข้อผิดพลาดในการโหลดข้อมูลความคืบหน้า
+        </h1>
+        <p className="text-xs text-slate-500">{errorMsg || "ไม่สามารถดึงข้อมูลได้"}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 max-w-3xl mx-auto">

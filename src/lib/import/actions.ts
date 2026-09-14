@@ -16,6 +16,7 @@ export interface ValidationResult {
     planName: string;
     description?: string;
     startDate: string;
+    endDate?: string;
     daysCount: number;
     mealsCount: number;
     ingredientsCount: number;
@@ -68,6 +69,8 @@ export async function validateMealPlanJsonAction(rawJson: string): Promise<Valid
     }
   }
 
+  const endDate = data.plan.days[data.plan.days.length - 1]?.date || data.plan.startDate;
+
   return {
     valid: true,
     errors: [],
@@ -76,6 +79,7 @@ export async function validateMealPlanJsonAction(rawJson: string): Promise<Valid
       planName: data.plan.name,
       description: data.plan.description,
       startDate: data.plan.startDate,
+      endDate,
       daysCount: data.plan.days.length,
       mealsCount: totalMeals,
       ingredientsCount: totalIngredients,

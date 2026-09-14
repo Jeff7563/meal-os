@@ -1,12 +1,32 @@
 import React from "react";
 import { getShoppingItems } from "@/lib/repository";
 import { ShoppingList } from "@/components/ingredients/ShoppingList";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, AlertCircle } from "lucide-react";
+import { ShoppingListItem } from "@/types/meal";
 
 export const dynamic = "force-dynamic";
 
 export default async function IngredientsPage() {
-  const items = await getShoppingItems();
+  let items: ShoppingListItem[] = [];
+  let errorMsg: string | null = null;
+
+  try {
+    items = await getShoppingItems();
+  } catch (err: unknown) {
+    errorMsg = err instanceof Error ? err.message : "ไม่สามารถเชื่อมต่อฐานข้อมูลได้";
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="max-w-md mx-auto py-12 px-4 text-center space-y-4">
+        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
+        <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+          เกิดข้อผิดพลาดในการโหลดรายการวัตถุดิบ
+        </h1>
+        <p className="text-xs text-slate-500">{errorMsg}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 max-w-2xl mx-auto">

@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   aggregateIngredients,
+  normalizeIngredientName,
   normalizeUnit,
   RawIngredient,
 } from "@/lib/shopping/aggregator";
@@ -44,6 +45,44 @@ describe("Ingredient Aggregation Algorithm Tests", () => {
     expect(thapPhiItem?.amount).toBe(1);
   });
 
+  it("should trim whitespace so '  อกไก่  ' combines with 'อกไก่'", () => {
+    const ingredients: RawIngredient[] = [
+      { name: "  อกไก่  ", amount: 150, unit: "g", category: "protein" },
+      { name: "อกไก่", amount: 250, unit: "g", category: "protein" },
+    ];
+
+    const result = aggregateIngredients(ingredients);
+    expect(result.length).toBe(1);
+    expect(result[0].ingredientName).toBe("อกไก่");
+    expect(result[0].amount).toBe(400);
+  });
+
+  it("should be case-insensitive for English ingredient names ('Egg' and 'egg')", () => {
+    const ingredients: RawIngredient[] = [
+      { name: "Egg", amount: 2, unit: "ฟอง", category: "protein" },
+      { name: "egg", amount: 3, unit: "ฟอง", category: "protein" },
+    ];
+
+    const result = aggregateIngredients(ingredients);
+    expect(result.length).toBe(1);
+    expect(result[0].amount).toBe(5);
+    expect(result[0].unit).toBe("ฟอง");
+  });
+
+  it("should keep 1000 g and 1 kg separate to avoid unit conversion bugs in V1", () => {
+    const ingredients: RawIngredient[] = [
+      { name: "อกไก่", amount: 1000, unit: "g", category: "protein" },
+      { name: "อกไก่", amount: 1, unit: "kg", category: "protein" },
+    ];
+
+    const result = aggregateIngredients(ingredients);
+    expect(result.length).toBe(2);
+    const gItem = result.find((i) => i.unit === "g");
+    const kgItem = result.find((i) => i.unit === "kg");
+    expect(gItem?.amount).toBe(1000);
+    expect(kgItem?.amount).toBe(1);
+  });
+
   it("should support diverse Thai units (ฟอง, ลูก, หัว, แพ็ก, ช้อนชา, ช้อนโต๊ะ)", () => {
     const ingredients: RawIngredient[] = [
       { name: "ไข่", amount: 2, unit: "ฟอง", category: "protein" },
@@ -71,12 +110,9 @@ describe("Ingredient Aggregation Algorithm Tests", () => {
     expect(cabbage?.unit).toBe("หัว");
   });
 
-  it("should normalize unit synonyms like กรัม to g and กิโลกรัม to kg", () => {
-    expect(normalizeUnit("กรัม")).toBe("g");
-    expect(normalizeUnit("g")).toBe("g");
-    expect(normalizeUnit("กิโลกรัม")).toBe("kg");
-    expect(normalizeUnit("kg")).toBe("kg");
-    expect(normalizeUnit("มิลลิลิตร")).toBe("ml");
-    expect(normalizeUnit("ลิตร")).toBe("L");
+  it("should normalize ingredient strings properly", () => {
+    expect(normalizeIngredientName("   สันในไก่   ")).toBe("สันในไก่");
+    expect(normalizeIngredientName("Chicken   Breast")).toBe("Chicken Breast");
+    expect(normalizeUnit("  g  ")).toBe("g");
   });
 });

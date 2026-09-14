@@ -12,10 +12,12 @@ import {
   Droplet,
   Utensils,
   Share2,
+  FastForward,
+  Undo2,
 } from "lucide-react";
 import { MealItem, MealStatus } from "@/types/meal";
 import { MealTypeBadge } from "@/components/meal/MealTypeBadge";
-import { toggleMealCompleteAction } from "@/lib/meal-log/actions";
+import { setMealStatusAction } from "@/lib/meal-log/actions";
 import { useToast } from "@/components/ui/toast";
 import confetti from "canvas-confetti";
 
@@ -30,9 +32,10 @@ export function MealDetailView({ meal, dateStr }: MealDetailViewProps) {
   const { toast } = useToast();
 
   const isCompleted = status === "COMPLETED";
+  const isSkipped = status === "SKIPPED";
 
-  const handleToggle = () => {
-    const nextStatus: MealStatus = isCompleted ? "PENDING" : "COMPLETED";
+  const handleSetStatus = (nextStatus: MealStatus) => {
+    const prevStatus = status;
     setStatus(nextStatus);
 
     if (nextStatus === "COMPLETED") {
@@ -45,24 +48,26 @@ export function MealDetailView({ meal, dateStr }: MealDetailViewProps) {
         });
       } catch {}
       toast(`บันทึกว่ากินมื้อ "${meal.name}" เรียบร้อยแล้ว ✓`, "success");
+    } else if (nextStatus === "SKIPPED") {
+      toast(`ข้ามมื้อ "${meal.name}" เรียบร้อย`, "info");
     } else {
-      toast(`ยกเลิกสถานะกินแล้ว`, "info");
+      toast(`ยกเลิกสถานะมื้อ "${meal.name}"`, "info");
     }
 
     startTransition(async () => {
-      const res = await toggleMealCompleteAction(meal.id, dateStr);
+      const res = await setMealStatusAction(meal.id, dateStr, nextStatus);
       if (!res.success) {
-        setStatus(status);
-        toast("เกิดข้อผิดพลาดในการบันทึกสถานะ", "error");
+        setStatus(prevStatus);
+        toast(res.error || "เกิดข้อผิดพลาดในการบันทึกสถานะ", "error");
       }
     });
   };
 
   const hasNutrition =
-    meal.calories || meal.protein || meal.carbs || meal.fat;
+    meal.calories != null || meal.protein != null || meal.carbs != null || meal.fat != null;
 
   return (
-    <div className="max-w-2xl mx-auto pb-28">
+    <div className="max-w-2xl mx-auto pb-32">
       {/* Top Nav Back button */}
       <div className="flex items-center justify-between py-3 mb-2">
         <Link
@@ -94,7 +99,7 @@ export function MealDetailView({ meal, dateStr }: MealDetailViewProps) {
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-2">
             <MealTypeBadge type={meal.type} time={meal.time} className="shadow-sm" />
-            {meal.prepTimeMinutes && (
+            {meal.prepTimeMinutes != null && (
               <span className="inline-flex items-center gap-1 text-xs bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full">
                 <Clock className="w-3.5 h-3.5" />
                 {meal.prepTimeMinutes} นาที
@@ -112,13 +117,13 @@ export function MealDetailView({ meal, dateStr }: MealDetailViewProps) {
         </div>
       </div>
 
-      {/* Nutrition Breakdown Card */}
+      {/* Nutrition Breakdown Card (Strictly hide fields if null) */}
       {hasNutrition && (
         <section className="mb-6 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
             ข้อมูลโภชนาการ (Nutrition)
           </h2>
-          <div className="grid grid-cols-4 gap-2 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
             {meal.calories != null && (
               <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-900/50">
                 <Flame className="w-4 h-4 mx-auto text-amber-500 mb-1" />
@@ -226,20 +231,58 @@ export function MealDetailView({ meal, dateStr }: MealDetailViewProps) {
         </section>
       )}
 
-      {/* Fixed Bottom Action Bar: Big "กินแล้ว ✓" Button */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 z-30 max-w-2xl mx-auto md:bottom-4 md:rounded-2xl md:border shadow-xl">
-        <button
-          onClick={handleToggle}
-          disabled={isPending}
-          className={`w-full h-12 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.99] ${
-            isCompleted
-              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 hover:bg-emerald-200 border border-emerald-300 dark:border-emerald-800"
-              : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/30"
-          }`}
-        >
-          <Check className="w-5 h-5 stroke-[2.5]" />
-          <span>{isCompleted ? "กินแล้ว ✓ (แตะเพื่อยกเลิก)" : "กินแล้ว"}</span>
-        </button>
+      {/* Fixed Bottom Action Controls: กินแล้ว / ข้ามมื้อ / Undo */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 z-30 max-w-2xl mx-auto md:bottom-4 md:rounded-2xl md:border shadow-xl flex items-center gap-3">
+        {isCompleted ? (
+          <>
+            <div className="flex-1 h-12 rounded-xl font-bold text-sm bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 flex items-center justify-center gap-2">
+              <Check className="w-5 h-5 stroke-[2.5]" />
+              <span>✓ กินแล้ว</span>
+            </div>
+            <button
+              onClick={() => handleSetStatus("PENDING")}
+              disabled={isPending}
+              className="h-12 px-4 rounded-xl font-semibold text-xs border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5"
+            >
+              <Undo2 className="w-4 h-4" />
+              <span>Undo</span>
+            </button>
+          </>
+        ) : isSkipped ? (
+          <>
+            <div className="flex-1 h-12 rounded-xl font-bold text-sm bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-2">
+              <FastForward className="w-4 h-4" />
+              <span>ข้ามมื้อนี้แล้ว</span>
+            </div>
+            <button
+              onClick={() => handleSetStatus("PENDING")}
+              disabled={isPending}
+              className="h-12 px-4 rounded-xl font-semibold text-xs border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5"
+            >
+              <Undo2 className="w-4 h-4" />
+              <span>Undo</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={() => handleSetStatus("SKIPPED")}
+              disabled={isPending}
+              className="h-12 px-4 rounded-xl font-semibold text-xs border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5"
+            >
+              <FastForward className="w-4 h-4" />
+              <span>ข้ามมื้อ</span>
+            </button>
+            <button
+              onClick={() => handleSetStatus("COMPLETED")}
+              disabled={isPending}
+              className="flex-1 h-12 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/30 flex items-center justify-center gap-2 active:scale-[0.99] transition-all"
+            >
+              <Check className="w-5 h-5 stroke-[2.5]" />
+              <span>✓ กินแล้ว</span>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 // Utilities for Asia/Bangkok Timezone and Thai Date formatting
+// Designed to eliminate any UTC date shift bugs
 
 export const BANGKOK_TZ = "Asia/Bangkok";
 
@@ -44,8 +45,9 @@ export const THAI_MONTHS_SHORT = [
 
 /**
  * Returns current date string in Asia/Bangkok timezone: YYYY-MM-DD
+ * Safe against UTC date shifts.
  */
-export function getBangkokTodayString(): string {
+export function getBangkokToday(): string {
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: BANGKOK_TZ,
     year: "numeric",
@@ -55,13 +57,19 @@ export function getBangkokTodayString(): string {
   return formatter.format(new Date());
 }
 
+export const getBangkokTodayString = getBangkokToday;
+
 /**
- * Converts a Date object or timestamp to YYYY-MM-DD in Asia/Bangkok
+ * Converts a Date object, timestamp, or string to YYYY-MM-DD in Asia/Bangkok timezone.
+ * Never uses new Date().toISOString().split("T")[0] to avoid UTC offsets.
  */
-export function toBangkokDateString(date: Date | string | number): string {
+export function toCalendarDate(date: Date | string | number = new Date()): string {
+  if (typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return date;
+  }
   const d = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
   if (isNaN(d.getTime())) {
-    return getBangkokTodayString();
+    return getBangkokToday();
   }
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: BANGKOK_TZ,
@@ -72,11 +80,13 @@ export function toBangkokDateString(date: Date | string | number): string {
   return formatter.format(d);
 }
 
+export const toBangkokDateString = toCalendarDate;
+
 /**
- * Parses YYYY-MM-DD into a localized Thai date format
+ * Formats a calendar date YYYY-MM-DD into a localized Thai date format.
  * Example: "2026-09-14" -> "วันจันทร์ที่ 14 กันยายน"
  */
-export function formatThaiDateLong(dateStr: string, includeYear = false): string {
+export function formatThaiDate(dateStr: string, includeYear = false): string {
   if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr || "";
   }
@@ -100,8 +110,10 @@ export function formatThaiDateLong(dateStr: string, includeYear = false): string
   return `วัน${dayName}ที่ ${day} ${monthName}`;
 }
 
+export const formatThaiDateLong = formatThaiDate;
+
 /**
- * Format short: "14 ก.ย." or "จันทร์ 14 ก.ย."
+ * Formats short Thai date: "14 ก.ย." or "จันทร์ 14 ก.ย."
  */
 export function formatThaiDateShort(dateStr: string, includeDayName = true): string {
   if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr || "";
@@ -136,7 +148,7 @@ export function getDayLabelFromDate(dateStr: string): string {
 }
 
 /**
- * Adds or subtracts days to a YYYY-MM-DD string safely
+ * Adds or subtracts days to a YYYY-MM-DD calendar date string safely
  */
 export function addDaysToDateString(dateStr: string, daysToAdd: number): string {
   const [yearStr, monthStr, dayStr] = dateStr.split("-");
@@ -162,9 +174,8 @@ export function getWeekDates(baseDateStr: string): { date: string; label: string
   const day = parseInt(dayStr, 10);
 
   const dateObj = new Date(Date.UTC(year, month, day, 12, 0, 0));
-  // 0 is Sunday, 1 is Monday, ..., 6 is Saturday
   const dayOfWeek = dateObj.getUTCDay();
-  // We want Monday as index 0 in week
+  // Monday is index 0
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
 
   const mondayDate = new Date(Date.UTC(year, month, day + diffToMonday, 12, 0, 0));

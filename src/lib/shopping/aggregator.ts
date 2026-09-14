@@ -11,43 +11,33 @@ export interface RawIngredient {
 }
 
 /**
- * Normalizes an ingredient name for consistent grouping
- * e.g., " อกไก่  " -> "อกไก่", "Chicken Breast" -> "chicken breast"
+ * Normalizes an ingredient name for grouping:
+ * 1. Trim leading and trailing whitespace
+ * 2. Collapse internal whitespace
+ * 3. Case-insensitive comparison
+ * Example: "อกไก่" and " อกไก่ " are identical.
+ * "Chicken Breast" and "  chicken  breast  " are identical.
  */
 export function normalizeIngredientName(name: string): string {
   return name.trim().replace(/\s+/g, " ");
 }
 
 /**
- * Normalizes unit string
- * e.g. "g" vs "กรัม", "kg" vs "กก."
+ * Normalizes unit string without unit conversion.
+ * Trim whitespace and lower-case.
+ * 1000 g and 1 kg remain separate to avoid conversion bugs.
  */
 export function normalizeUnit(unit: string): string {
-  const trimmed = unit.trim();
-  const lower = trimmed.toLowerCase();
-
-  if (lower === "กรัม" || lower === "g" || lower === "gram" || lower === "grams") {
-    return "g";
-  }
-  if (lower === "กิโลกรัม" || lower === "kg" || lower === "กก." || lower === "kilogram") {
-    return "kg";
-  }
-  if (lower === "มิลลิลิตร" || lower === "ml" || lower === "มล.") {
-    return "ml";
-  }
-  if (lower === "ลิตร" || lower === "l" || lower === "liter") {
-    return "L";
-  }
-  return trimmed;
+  return unit.trim();
 }
 
 /**
  * Aggregates a list of ingredients:
  * Combines ingredients with the SAME name and SAME unit.
- * Keeps items with different units SEPARATE (e.g. ข้าว 200 g vs ข้าว 1 ทัพพี).
+ * Keeps items with different units SEPARATE (e.g. 1000 g vs 1 kg, ข้าว 200 g vs ข้าว 1 ทัพพี).
  */
 export function aggregateIngredients(ingredients: RawIngredient[]): ShoppingListItem[] {
-  // Key: normalizedName + "::" + normalizedUnit
+  // Key: normalizedName.toLowerCase() + "::" + normalizedUnit.toLowerCase()
   const map = new Map<string, ShoppingListItem>();
 
   for (const item of ingredients) {
@@ -91,7 +81,6 @@ export function aggregateIngredients(ingredients: RawIngredient[]): ShoppingList
     }
   }
 
-  // Convert map to sorted array
   const categoryOrder: Record<string, number> = {
     protein: 1,
     vegetable: 2,
@@ -109,7 +98,7 @@ export function aggregateIngredients(ingredients: RawIngredient[]): ShoppingList
 }
 
 /**
- * Aggregates all ingredients across a meal plan's days
+ * Aggregates all ingredients across an active meal plan's days
  */
 export function aggregateMealPlanIngredients(days: MealPlanDayItem[]): ShoppingListItem[] {
   const rawList: RawIngredient[] = [];

@@ -1,13 +1,32 @@
 import React from "react";
 import { getActiveMealPlan } from "@/lib/repository";
 import { WeeklySchedule } from "@/components/schedule/WeeklySchedule";
-import { Calendar } from "lucide-react";
+import { Calendar, AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function SchedulePage() {
-  const plan = await getActiveMealPlan();
+  let plan;
+  let errorMsg: string | null = null;
+
+  try {
+    plan = await getActiveMealPlan();
+  } catch (err: unknown) {
+    errorMsg = err instanceof Error ? err.message : "ไม่สามารถเชื่อมต่อฐานข้อมูลได้";
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="max-w-md mx-auto py-12 px-4 text-center space-y-4">
+        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
+        <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+          เกิดข้อผิดพลาดในการโหลดตารางอาหาร
+        </h1>
+        <p className="text-xs text-slate-500">{errorMsg}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
