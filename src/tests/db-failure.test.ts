@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as repo from "@/lib/repository";
 import { toggleMealCompleteAction, setMealStatusAction } from "@/lib/meal-log/actions";
 import { updateShoppingStatusAction } from "@/lib/shopping/actions";
@@ -11,15 +11,14 @@ describe("Database Failure & Resilient Mutation Tests", () => {
     vi.restoreAllMocks();
   });
 
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("should reject setMealStatus and NOT pretend success when database is disconnected in production", async () => {
-    const originalEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "production";
-    try {
-      vi.spyOn(repo, "isDatabaseConnected").mockResolvedValue(false);
-      await expect(repo.setMealStatus("meal-1", "2026-09-14", "COMPLETED")).rejects.toThrow();
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
+    vi.stubEnv("NODE_ENV", "production");
+    vi.spyOn(repo, "isDatabaseConnected").mockResolvedValue(false);
+    await expect(repo.setMealStatus("meal-1", "2026-09-14", "COMPLETED")).rejects.toThrow();
   });
 
   it("toggleMealCompleteAction should return success: false when repository mutation fails", async () => {

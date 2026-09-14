@@ -2,7 +2,8 @@
 // Supporting Meal Planning, Meal Completion Logs, Shopping List, Weight Tracking, and Future Exercise
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
