@@ -1,69 +1,82 @@
-import Image from "next/image";
+import React from "react";
+import Link from "next/link";
+import { TopHeader } from "@/components/layout/TopHeader";
+import { MealProgressBar } from "@/components/meal/MealProgressBar";
+import { MealCard } from "@/components/meal/MealCard";
+import { getMealsForDate, getUserProfile } from "@/lib/repository";
+import { getBangkokTodayString } from "@/lib/date-utils";
+import { Upload, Sparkles } from "lucide-react";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function TodayPage() {
+  const todayStr = getBangkokTodayString();
+  const [{ dayLabel, meals, planName }, user] = await Promise.all([
+    getMealsForDate(todayStr),
+    getUserProfile(),
+  ]);
+
+  const completedCount = meals.filter((m) => m.status === "COMPLETED").length;
+  const totalCount = meals.length;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="space-y-5 pb-24 max-w-xl mx-auto">
+      {/* 1. Greeting & Date */}
+      <TopHeader userName={user.name} customDate={todayStr} />
+
+      {/* 2. Today's Progress Bar (ตอบคำถามภายใน 3 วินาที) */}
+      {totalCount > 0 && (
+        <MealProgressBar
+          completed={completedCount}
+          total={totalCount}
+          title={`ความคืบหน้าวันนี้ (${dayLabel})`}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      )}
+
+      {/* 3. Today's Meals Section */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            มื้ออาหารของวันนี้ (Today&apos;s Meals)
+          </h2>
+          {planName && (
+            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200/50 dark:border-emerald-800/50 line-clamp-1 max-w-[180px]">
+              {planName}
+            </span>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {/* Meal Cards */}
+        {totalCount > 0 ? (
+          <div className="space-y-3">
+            {meals.map((meal) => (
+              <MealCard key={meal.id} meal={meal} dateStr={todayStr} />
+            ))}
+          </div>
+        ) : (
+          /* Empty State */
+          <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 mx-auto flex items-center justify-center">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+              ยังไม่มีตารางอาหารสำหรับวันนี้
+            </h3>
+            <p className="text-xs text-slate-500 max-w-xs mx-auto">
+              คุณสามารถนำเข้าตารางอาหารใหม่ผ่าน JSON จาก ChatGPT หรือใช้ตารางอาหารตัวอย่างเพื่อเริ่มต้น
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/settings/import"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-600/20"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Import Meal Plan</span>
+              </Link>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }

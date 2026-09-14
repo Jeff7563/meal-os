@@ -1,0 +1,241 @@
+// Prisma Schema for Personal Meal OS
+// Supporting Meal Planning, Meal Completion Logs, Shopping List, Weight Tracking, and Future Exercise
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SNACK
+}
+
+enum MealStatus {
+  PENDING
+  COMPLETED
+  SKIPPED
+}
+
+enum ShoppingStatus {
+  NEEDED
+  HAVE
+  PURCHASED
+}
+
+enum ExerciseType {
+  WALKING
+  RUNNING
+  CYCLING
+  STRENGTH
+  OTHER
+}
+
+enum ExerciseIntensity {
+  EASY
+  MODERATE
+  HARD
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String?        @unique
+  name          String         @default("ผู้ใช้งาน")
+  height        Float?
+  currentWeight Float?
+  goalWeight    Float?
+  breakfastTime String         @default("07:30")
+  lunchTime     String         @default("12:00")
+  dinnerTime    String         @default("18:30")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  mealPlans     MealPlan[]
+  weightLogs    WeightLog[]
+  exercisePlans ExercisePlan[]
+}
+
+model MealPlan {
+  id          String         @id @default(cuid())
+  userId      String?
+  name        String
+  description String?
+  startDate   String         // YYYY-MM-DD (Bangkok Time)
+  endDate     String?        // YYYY-MM-DD (Bangkok Time)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days          MealPlanDay[]
+  shoppingItems ShoppingItem[]
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+model MealPlanDay {
+  id         String   @id @default(cuid())
+  mealPlanId String
+  dayIndex   Int      // 1-7
+  date       String   // YYYY-MM-DD
+  label      String   // จันทร์, อังคาร, etc.
+
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  meals      Meal[]
+
+  @@index([mealPlanId])
+  @@index([date])
+}
+
+model Meal {
+  id              String            @id @default(cuid())
+  mealPlanDayId   String
+  externalId      String?
+  type            MealType          @default(BREAKFAST)
+  time            String            // "07:30"
+  name            String
+  description     String?
+  prepTimeMinutes Int?              @default(15)
+  calories        Float?
+  protein         Float?
+  carbs           Float?
+  fat             Float?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  mealPlanDay  MealPlanDay       @relation(fields: [mealPlanDayId], references: [id], onDelete: Cascade)
+  ingredients  MealIngredient[]
+  instructions MealInstruction[]
+  tags         MealTag[]
+  logs         MealLog[]
+
+  @@index([mealPlanDayId])
+  @@index([type])
+}
+
+model MealIngredient {
+  id       String  @id @default(cuid())
+  mealId   String
+  name     String
+  amount   Float
+  unit     String
+  category String? // protein, vegetable, carb, seasoning, other
+
+  meal     Meal    @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@index([mealId])
+}
+
+model MealInstruction {
+  id     String @id @default(cuid())
+  mealId String
+  step   Int
+  text   String
+
+  meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@index([mealId])
+}
+
+model MealTag {
+  id     String @id @default(cuid())
+  mealId String
+  name   String
+
+  meal   Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@index([mealId])
+}
+
+model MealLog {
+  id          String     @id @default(cuid())
+  mealId      String
+  date        String     // YYYY-MM-DD
+  status      MealStatus @default(PENDING)
+  completedAt DateTime?
+  note        String?
+
+  meal        Meal       @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@unique([mealId, date])
+  @@index([mealId])
+  @@index([date])
+  @@index([status])
+}
+
+model ShoppingItem {
+  id             String         @id @default(cuid())
+  mealPlanId     String
+  ingredientName String
+  amount         Float
+  unit           String
+  category       String?        // protein, vegetable, carb, etc.
+  status         ShoppingStatus @default(NEEDED)
+
+  mealPlan       MealPlan       @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+
+  @@index([mealPlanId])
+  @@index([status])
+}
+
+model WeightLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  date      String   // YYYY-MM-DD
+  weightKg  Float
+  note      String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+}
+
+// Future Exercise System (Ready for walking / workout expansion)
+model ExercisePlan {
+  id        String            @id @default(cuid())
+  userId    String?
+  name      String
+  startDate String
+  createdAt DateTime          @default(now())
+
+  user      User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions  ExerciseSession[]
+
+  @@index([userId])
+}
+
+model ExerciseSession {
+  id              String            @id @default(cuid())
+  exercisePlanId  String
+  date            String            // YYYY-MM-DD
+  type            ExerciseType      @default(WALKING)
+  name            String
+  durationMinutes Int
+  intensity       ExerciseIntensity @default(MODERATE)
+
+  exercisePlan    ExercisePlan      @relation(fields: [exercisePlanId], references: [id], onDelete: Cascade)
+  logs            ExerciseLog[]
+
+  @@index([exercisePlanId])
+  @@index([date])
+}
+
+model ExerciseLog {
+  id                String          @id @default(cuid())
+  exerciseSessionId String
+  status            MealStatus      @default(PENDING)
+  completedAt       DateTime?
+
+  exerciseSession   ExerciseSession @relation(fields: [exerciseSessionId], references: [id], onDelete: Cascade)
+
+  @@index([exerciseSessionId])
+}
