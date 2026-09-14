@@ -14,7 +14,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
+      <div className="w-8 h-8 rounded-lg bg-[var(--border-soft)] animate-pulse" />
     );
   }
 
@@ -23,11 +23,15 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-soft)] transition-colors"
       aria-label={isDark ? "เปลี่ยนเป็นธีมสว่าง" : "เปลี่ยนเป็นธีมมืด"}
       title={isDark ? "ธีมสว่าง" : "ธีมมืด"}
     >
-      {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+      {isDark ? (
+        <Sun className="w-4 h-4 text-[var(--orange-primary)] stroke-[2]" />
+      ) : (
+        <Moon className="w-4 h-4 text-[var(--text-secondary)] stroke-[2]" />
+      )}
     </button>
   );
 }

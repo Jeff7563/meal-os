@@ -7,7 +7,6 @@ import {
   AlertCircle,
   Upload,
   Sparkles,
-  FileCode,
   Trash2,
 } from "lucide-react";
 import {
@@ -75,41 +74,41 @@ export function JsonImporter() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-24">
+    <div className="space-y-6">
       {/* Intro Header */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-        <div className="flex items-center gap-2 mb-1">
-          <FileCode className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          <h1 className="text-lg font-bold text-slate-900 dark:text-white">
-            นำเข้าตารางอาหารด้วย JSON (AI Meal Plan Importer)
-          </h1>
-        </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-          นำ JSON ที่ได้จาก ChatGPT หรือ AI มาวางเพื่ออัปเดตตารางอาหารใหม่ ระบบจะตรวจสอบความถูกต้องของข้อมูลและบันทึกอัตโนมัติ
+      <div className="p-5 sm:p-6 rounded-[20px] bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+          นำเข้าตารางอาหารด้วย JSON
+        </h1>
+        <p className="text-sm text-[var(--text-secondary)]">
+          วางข้อมูล JSON ตารางอาหารของคุณด้านล่าง
+        </p>
+        <p className="text-xs text-[var(--text-muted)]">
+          (รองรับ JSON ที่สร้างจาก ChatGPT และ AI ต่าง ๆ)
         </p>
 
-        <div className="mt-3 flex items-center gap-2 flex-wrap">
+        <div className="pt-2 flex items-center gap-2 flex-wrap">
           <button
             onClick={handleLoadExample}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 hover:bg-emerald-100 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-xs font-semibold bg-[var(--green-soft)] text-[var(--green-dark)] hover:bg-[var(--green-primary)] hover:text-white transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>โหลดตัวอย่าง JSON สัปดาห์นี้</span>
           </button>
           <button
             onClick={handleClear}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-xs font-medium text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-soft)] transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>ล้างข้อความ</span>
+            <span>ล้าง</span>
           </button>
         </div>
       </div>
 
       {/* JSON Textarea */}
       <div className="space-y-2">
-        <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-          วาง JSON ของคุณที่นี่ (Paste Meal Plan JSON):
+        <label className="text-xs font-medium text-[var(--text-secondary)] block">
+          ข้อมูล JSON:
         </label>
         <textarea
           rows={12}
@@ -119,7 +118,7 @@ export function JsonImporter() {
             if (validationResult) setValidationResult(null);
           }}
           placeholder={`{\n  "version": "1.0",\n  "plan": {\n    "name": "ลดน้ำหนัก - สัปดาห์ 1",\n    "startDate": "2026-09-14",\n    "days": [ ... ]\n  }\n}`}
-          className="w-full p-4 rounded-2xl font-mono text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+          className="w-full p-4 rounded-[18px] font-mono text-xs bg-[var(--surface)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)] text-[var(--text-primary)] leading-relaxed shadow-xs"
         />
       </div>
 
@@ -128,7 +127,7 @@ export function JsonImporter() {
         <button
           onClick={handleValidate}
           disabled={isValidating || !jsonText.trim()}
-          className="h-11 px-6 rounded-xl font-bold text-sm bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800 transition-all disabled:opacity-50"
+          className="h-11 px-6 rounded-[14px] font-semibold text-xs sm:text-sm bg-[var(--surface-white)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--border-soft)] transition-all disabled:opacity-50"
         >
           {isValidating ? "กำลังตรวจสอบ..." : "ตรวจข้อมูล (Validate)"}
         </button>
@@ -137,7 +136,7 @@ export function JsonImporter() {
           <button
             onClick={handleImport}
             disabled={isImporting}
-            className="h-11 px-6 rounded-xl font-bold text-sm bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/30 transition-all flex items-center gap-2"
+            className="h-11 px-6 rounded-[14px] font-semibold text-xs sm:text-sm bg-[var(--green-primary)] text-white hover:bg-[var(--green-dark)] shadow-xs transition-all flex items-center gap-2"
           >
             <Upload className="w-4 h-4" />
             <span>{isImporting ? "กำลังนำเข้า..." : "ยืนยันนำเข้า (Import)"}</span>
@@ -147,41 +146,41 @@ export function JsonImporter() {
 
       {/* VALIDATION RESULT: SUCCESS */}
       {validationResult && validationResult.valid && validationResult.stats && (
-        <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-4 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>✓ JSON Valid - โครงสร้างถูกต้อง พร้อมนำเข้า</span>
+        <div className="p-5 sm:p-6 rounded-[20px] bg-[var(--green-extra-soft)] border border-[var(--green-soft)] space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="flex items-center gap-2 text-[var(--green-dark)] font-bold text-sm">
+            <CheckCircle2 className="w-5 h-5 text-[var(--green-primary)] shrink-0" />
+            <span>✓ JSON Valid — พร้อมนำเข้า</span>
           </div>
 
           {/* Stats Preview Card */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
-              <span className="text-[10px] text-slate-400 block">ชื่อแผน</span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1" title={validationResult.stats.planName}>
+            <div className="p-3 rounded-[14px] bg-[var(--surface-white)] border border-[var(--border-soft)]">
+              <span className="text-[10px] text-[var(--text-muted)] block">ชื่อแผน</span>
+              <span className="text-xs font-bold text-[var(--text-primary)] line-clamp-1" title={validationResult.stats.planName}>
                 {validationResult.stats.planName}
               </span>
             </div>
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
-              <span className="text-[10px] text-slate-400 block">ช่วงวันที่ (เริ่ม - สิ้นสุด)</span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 font-mono">
+            <div className="p-3 rounded-[14px] bg-[var(--surface-white)] border border-[var(--border-soft)]">
+              <span className="text-[10px] text-[var(--text-muted)] block">ช่วงวันที่ (เริ่ม - สิ้นสุด)</span>
+              <span className="text-xs font-bold text-[var(--text-primary)] font-mono">
                 {validationResult.stats.startDate} ~ {validationResult.stats.endDate}
               </span>
             </div>
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
-              <span className="text-[10px] text-slate-400 block">จำนวนวัน</span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            <div className="p-3 rounded-[14px] bg-[var(--surface-white)] border border-[var(--border-soft)]">
+              <span className="text-[10px] text-[var(--text-muted)] block">จำนวนวัน</span>
+              <span className="text-xs font-bold text-[var(--text-primary)]">
                 {validationResult.stats.daysCount} วัน
               </span>
             </div>
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
-              <span className="text-[10px] text-slate-400 block">จำนวนมื้อทั้งหมด</span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            <div className="p-3 rounded-[14px] bg-[var(--surface-white)] border border-[var(--border-soft)]">
+              <span className="text-[10px] text-[var(--text-muted)] block">จำนวนมื้อทั้งหมด</span>
+              <span className="text-xs font-bold text-[var(--text-primary)]">
                 {validationResult.stats.mealsCount} มื้อ
               </span>
             </div>
-            <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/60">
-              <span className="text-[10px] text-slate-400 block">จำนวนวัตถุดิบทั้งหมด</span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+            <div className="p-3 rounded-[14px] bg-[var(--surface-white)] border border-[var(--border-soft)]">
+              <span className="text-[10px] text-[var(--text-muted)] block">จำนวนวัตถุดิบทั้งหมด</span>
+              <span className="text-xs font-bold text-[var(--text-primary)]">
                 {validationResult.stats.ingredientsCount} รายการ
               </span>
             </div>
@@ -189,15 +188,15 @@ export function JsonImporter() {
 
           {/* Mode Selector */}
           <div className="pt-2">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2">
-              โหมดการนำเข้า (Import Mode):
+            <label className="text-xs font-semibold text-[var(--text-primary)] block mb-2">
+              โหมดการนำเข้า:
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label
-                className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-colors ${
+                className={`p-3.5 rounded-[14px] border flex items-start gap-2.5 cursor-pointer transition-colors ${
                   importMode === "replace"
-                    ? "border-emerald-500 bg-white dark:bg-slate-900 shadow-xs"
-                    : "border-slate-200 dark:border-slate-800 bg-transparent"
+                    ? "border-[var(--green-primary)] bg-[var(--surface-white)] shadow-xs"
+                    : "border-[var(--border)] bg-transparent"
                 }`}
               >
                 <input
@@ -205,23 +204,23 @@ export function JsonImporter() {
                   name="importMode"
                   checked={importMode === "replace"}
                   onChange={() => setImportMode("replace")}
-                  className="mt-1 text-emerald-600"
+                  className="mt-1 text-[var(--green-primary)]"
                 />
                 <div>
-                  <span className="text-xs font-bold block text-slate-900 dark:text-white">
-                    Replace Existing (แทนที่ตารางปัจจุบัน)
+                  <span className="text-xs font-bold block text-[var(--text-primary)]">
+                    แทนที่แผนปัจจุบัน
                   </span>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-[var(--text-secondary)]">
                     ตั้งค่าให้แผนใหม่นี้เป็นแผนปัจจุบันที่ใช้งานทันที
                   </span>
                 </div>
               </label>
 
               <label
-                className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-colors ${
+                className={`p-3.5 rounded-[14px] border flex items-start gap-2.5 cursor-pointer transition-colors ${
                   importMode === "create"
-                    ? "border-emerald-500 bg-white dark:bg-slate-900 shadow-xs"
-                    : "border-slate-200 dark:border-slate-800 bg-transparent"
+                    ? "border-[var(--green-primary)] bg-[var(--surface-white)] shadow-xs"
+                    : "border-[var(--border)] bg-transparent"
                 }`}
               >
                 <input
@@ -229,14 +228,14 @@ export function JsonImporter() {
                   name="importMode"
                   checked={importMode === "create"}
                   onChange={() => setImportMode("create")}
-                  className="mt-1 text-emerald-600"
+                  className="mt-1 text-[var(--green-primary)]"
                 />
                 <div>
-                  <span className="text-xs font-bold block text-slate-900 dark:text-white">
-                    Create New Plan (สร้างแผนใหม่)
+                  <span className="text-xs font-bold block text-[var(--text-primary)]">
+                    นำเข้าเป็นแผนใหม่
                   </span>
-                  <span className="text-[11px] text-slate-500">
-                    เพิ่มเป็นแผนอาหารใหม่ในระบบ
+                  <span className="text-[11px] text-[var(--text-secondary)]">
+                    บันทึกเก็บเป็นแผนอาหารใหม่ในระบบ
                   </span>
                 </div>
               </label>
@@ -247,12 +246,12 @@ export function JsonImporter() {
 
       {/* VALIDATION RESULT: ERRORS */}
       {validationResult && !validationResult.valid && (
-        <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 space-y-3 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-sm">
-            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+        <div className="p-5 rounded-[20px] bg-[var(--red-soft)] border border-[#EAC4BE] dark:border-[#4A2420] space-y-3 animate-in fade-in zoom-in-95 duration-150">
+          <div className="flex items-center gap-2 text-[var(--red-text)] font-bold text-sm">
+            <AlertCircle className="w-5 h-5 text-[var(--red-text)] shrink-0" />
             <span>พบข้อผิดพลาดใน JSON ({validationResult.errors.length} รายการ):</span>
           </div>
-          <ul className="space-y-1.5 pl-6 list-disc text-xs text-rose-700 dark:text-rose-300">
+          <ul className="space-y-1 pl-6 list-disc text-xs text-[var(--red-text)]">
             {validationResult.errors.map((err, idx) => (
               <li key={idx} className="leading-relaxed">
                 {err}

@@ -49,26 +49,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-center justify-between p-3.5 rounded-xl shadow-lg border text-sm font-medium transition-all duration-200 animate-in fade-in slide-in-from-bottom-2 ${
-              t.type === "success"
-                ? "bg-emerald-900/90 text-emerald-100 border-emerald-700 backdrop-blur-md"
-                : t.type === "error"
-                ? "bg-red-900/90 text-red-100 border-red-700 backdrop-blur-md"
-                : "bg-slate-900/90 text-slate-100 border-slate-700 backdrop-blur-md"
-            }`}
+            className="pointer-events-auto flex items-center justify-between p-3.5 rounded-[16px] shadow-md border border-[var(--border)] bg-[var(--surface-white)] text-[var(--text-primary)] text-xs sm:text-sm font-medium transition-all duration-200 animate-in fade-in slide-in-from-bottom-2"
           >
             <div className="flex items-center gap-2.5">
-              {t.type === "success" && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />}
-              {t.type === "error" && <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />}
-              {t.type === "info" && <Info className="w-5 h-5 text-sky-400 shrink-0" />}
-              <span>{t.message}</span>
+              {t.type === "success" && (
+                <CheckCircle2 className="w-4 h-4 text-[var(--green-primary)] shrink-0 stroke-[2.5]" />
+              )}
+              {t.type === "error" && (
+                <AlertCircle className="w-4 h-4 text-[var(--red-text)] shrink-0 stroke-[2.5]" />
+              )}
+              {t.type === "info" && (
+                <Info className="w-4 h-4 text-[var(--orange-primary)] shrink-0 stroke-[2.5]" />
+              )}
+              <span className="leading-snug">{t.message}</span>
             </div>
             <button
               onClick={() => removeToast(t.id)}
-              className="p-1 hover:bg-white/10 rounded-lg transition-colors ml-2"
+              className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-lg transition-colors ml-2"
               aria-label="ปิดการแจ้งเตือน"
             >
-              <X className="w-4 h-4 opacity-70" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         ))}

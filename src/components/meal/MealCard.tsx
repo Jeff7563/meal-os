@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Check, ChevronRight, Clock, Flame, Dumbbell, FastForward, Undo2 } from "lucide-react";
+import { Check, Undo2, MoreHorizontal, FastForward, Clock } from "lucide-react";
 import { MealItem, MealStatus } from "@/types/meal";
 import { MealTypeBadge } from "@/components/meal/MealTypeBadge";
+import { MealImage } from "@/components/ui/MealImage";
+import { NutritionLine } from "@/components/meal/NutritionLine";
 import { setMealStatusAction } from "@/lib/meal-log/actions";
 import { useToast } from "@/components/ui/toast";
-import confetti from "canvas-confetti";
 
 interface MealCardProps {
   meal: MealItem;
@@ -17,44 +18,53 @@ interface MealCardProps {
 
 export function MealCard({ meal, dateStr, onStatusChange }: MealCardProps) {
   const [status, setStatus] = useState<MealStatus>(meal.status || "PENDING");
+  const [showMenu, setShowMenu] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const isCompleted = status === "COMPLETED";
   const isSkipped = status === "SKIPPED";
+
+  // Close more menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
 
   const handleSetStatus = (nextStatus: MealStatus, e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
+    setShowMenu(false);
 
     const prevStatus = status;
-    // 1. Optimistic UI update
+    // Optimistic UI update
     setStatus(nextStatus);
     onStatusChange?.(nextStatus);
 
     if (nextStatus === "COMPLETED") {
-      try {
-        confetti({
-          particleCount: 40,
-          spread: 50,
-          origin: { y: 0.7 },
-          colors: ["#10b981", "#34d399", "#6ee7b7"],
-        });
-      } catch {}
-      toast(`กินมื้อ "${meal.name}" เรียบร้อยแล้ว ✓`, "success");
+      toast(`บันทึกว่ากินมื้อ "${meal.name}" แล้ว ✓`, "success");
     } else if (nextStatus === "SKIPPED") {
-      toast(`ข้ามมื้อ "${meal.name}" เรียบร้อย`, "info");
+      toast(`ข้ามมื้อ "${meal.name}" แล้ว`, "info");
     } else {
       toast(`ยกเลิกสถานะมื้อ "${meal.name}"`, "info");
     }
 
-    // 2. Server save with strict rollback on failure
+    // Server save with rollback
     startTransition(async () => {
       const res = await setMealStatusAction(meal.id, dateStr, nextStatus);
       if (!res.success) {
-        // Rollback UI
         setStatus(prevStatus);
         onStatusChange?.(prevStatus);
         toast(res.error || "เกิดข้อผิดพลาดในการบันทึกลงฐานข้อมูล", "error");
@@ -63,136 +73,169 @@ export function MealCard({ meal, dateStr, onStatusChange }: MealCardProps) {
   };
 
   return (
-    <div
-      className={`group relative rounded-2xl p-4 transition-all duration-200 border bg-white dark:bg-slate-900 shadow-sm hover:shadow-md ${
+    <article
+      className={`relative rounded-[20px] border transition-all duration-200 overflow-hidden ${
         isCompleted
-          ? "border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/10 opacity-90"
+          ? "bg-[var(--green-extra-soft)] border-[var(--green-primary)]/40 shadow-xs"
           : isSkipped
-          ? "border-slate-300 dark:border-slate-800 bg-slate-100/40 dark:bg-slate-900/40 opacity-70"
-          : "border-slate-200/80 dark:border-slate-800"
+          ? "bg-[var(--background-soft)] border-[var(--border-soft)] opacity-80"
+          : "bg-[var(--surface)] border-[var(--border)] shadow-[0_2px_8px_rgba(40,34,25,0.03)] hover:shadow-[0_4px_16px_rgba(40,34,25,0.05)]"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        {/* Top Badges */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <MealTypeBadge type={meal.type} time={meal.time} />
-          {meal.prepTimeMinutes && (
-            <span className="inline-flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-              <Clock className="w-3 h-3" />
-              {meal.prepTimeMinutes} นาที
-            </span>
-          )}
-        </div>
-
-        {/* Completion Checkbox Button (44px min touch target) */}
-        <button
-          onClick={(e) => handleSetStatus(isCompleted ? "PENDING" : "COMPLETED", e)}
-          disabled={isPending}
-          aria-label={isCompleted ? "ยกเลิกสถานะกินแล้ว" : "ทำเครื่องหมายว่ากินแล้ว"}
-          className={`shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl transition-all duration-200 ${
-            isCompleted
-              ? "bg-emerald-600 text-white shadow-sm shadow-emerald-500/30 scale-105 hover:bg-emerald-700"
-              : isSkipped
-              ? "bg-slate-200 dark:bg-slate-800 text-slate-500"
-              : "border-2 border-slate-300 dark:border-slate-700 hover:border-emerald-500 text-transparent hover:text-emerald-500/40 bg-slate-50 dark:bg-slate-800/50"
-          }`}
-        >
-          {isCompleted ? (
-            <Check className="w-5 h-5 stroke-[3]" />
-          ) : isSkipped ? (
-            <FastForward className="w-4 h-4" />
-          ) : (
-            <Check className="w-5 h-5 opacity-0" />
-          )}
-        </button>
-      </div>
-
-      {/* Main Content clickable to Detail */}
-      <Link
-        href={`/meals/${meal.id}?date=${dateStr}`}
-        className="block mt-3 focus:outline-none group/link"
-      >
-        <div className="flex items-baseline justify-between gap-2">
-          <h3
-            className={`text-base md:text-lg font-bold transition-colors ${
-              isCompleted
-                ? "text-slate-700 dark:text-slate-300 line-through decoration-emerald-500/60"
-                : isSkipped
-                ? "text-slate-400 line-through"
-                : "text-slate-900 dark:text-white group-hover/link:text-emerald-600 dark:group-hover/link:text-emerald-400"
-            }`}
+      <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-start gap-4 sm:gap-5">
+        {/* Left / Top: Meal Image Placeholder (1:1 or 4:3) */}
+        <div className="w-full md:w-44 md:shrink-0">
+          <Link
+            href={`/meals/${meal.id}?date=${dateStr}`}
+            className="block group/img focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--green-primary)] rounded-[16px]"
+            tabIndex={-1}
+            aria-hidden="true"
           >
-            {meal.name}
-          </h3>
-          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 group-hover/link:translate-x-0.5 transition-transform" />
+            <MealImage
+              type={meal.type}
+              alt={meal.name}
+              aspectRatio="4/3"
+              className="w-full md:h-32 transition-transform duration-200 group-hover/img:scale-[1.02]"
+            />
+          </Link>
         </div>
 
-        {meal.description && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
-            {meal.description}
-          </p>
-        )}
+        {/* Right / Center: Meal Information */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+          <div>
+            {/* Top Bar: Meal Type + Time + More Action */}
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <MealTypeBadge type={meal.type} time={meal.time} />
+                {meal.prepTimeMinutes != null && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-[var(--text-muted)] font-normal">
+                    <Clock className="w-3 h-3" />
+                    {meal.prepTimeMinutes} นาที
+                  </span>
+                )}
+              </div>
 
-        {/* Nutrition Badges (Hide if null) */}
-        {(meal.calories || meal.protein) && (
-          <div className="flex items-center gap-2 mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/60">
-            {meal.calories != null && (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
-                <Flame className="w-3 h-3 text-amber-500" />
-                {Math.round(meal.calories)} kcal
-              </span>
-            )}
-            {meal.protein != null && (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
-                <Dumbbell className="w-3 h-3 text-emerald-500" />
-                โปรตีน {Math.round(meal.protein)}g
-              </span>
+              {/* More menu for Skip action */}
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setShowMenu((prev) => !prev)}
+                  className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--border-soft)] transition-colors"
+                  aria-label="ตัวเลือกเพิ่มเติม"
+                  title="ตัวเลือกเพิ่มเติม"
+                >
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+
+                {showMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-36 bg-[var(--surface-white)] rounded-xl border border-[var(--border)] shadow-md py-1 z-20 animate-in fade-in zoom-in-95 duration-150">
+                    <button
+                      onClick={(e) =>
+                        handleSetStatus(isSkipped ? "PENDING" : "SKIPPED", e)
+                      }
+                      disabled={isPending}
+                      className="w-full px-3 py-2 text-left text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--background-soft)] flex items-center gap-2"
+                    >
+                      <FastForward className="w-3.5 h-3.5" />
+                      <span>{isSkipped ? "ยกเลิกการข้าม" : "ข้ามมื้อนี้"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Meal Title & Link */}
+            <Link
+              href={`/meals/${meal.id}?date=${dateStr}`}
+              className="block group/link focus:outline-none"
+            >
+              <h3
+                className={`text-[17px] sm:text-lg font-semibold tracking-tight transition-colors ${
+                  isCompleted
+                    ? "text-[var(--green-dark)]"
+                    : isSkipped
+                    ? "text-[var(--text-muted)] line-through"
+                    : "text-[var(--text-primary)] group-hover/link:text-[var(--green-primary)]"
+                }`}
+              >
+                {meal.name}
+              </h3>
+
+              {meal.description && (
+                <p className="text-xs text-[var(--text-secondary)] mt-1 line-clamp-2 leading-relaxed">
+                  {meal.description}
+                </p>
+              )}
+            </Link>
+
+            {/* Nutrition Inline */}
+            {(meal.calories != null || meal.protein != null) && (
+              <div className="mt-2.5">
+                <NutritionLine
+                  calories={meal.calories}
+                  protein={meal.protein}
+                  showAll={false}
+                />
+              </div>
             )}
           </div>
-        )}
-      </Link>
 
-      {/* Bottom Action Controls: กินแล้ว / ข้ามมื้อ / Undo */}
-      <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/60">
-        <span className="text-[11px] font-medium text-slate-400">
-          {isCompleted
-            ? "✓ กินแล้ว"
-            : isSkipped
-            ? "ข้ามมื้อนี้"
-            : "ยังไม่ได้กิน"}
-        </span>
+          {/* Bottom Actions: รายละเอียด (Secondary) & กินแล้ว (Primary) */}
+          <div className="mt-4 pt-3 border-t border-[var(--border-soft)] flex items-center justify-between gap-2 flex-wrap">
+            {/* Status indicator on the left */}
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/meals/${meal.id}?date=${dateStr}`}
+                className="inline-flex items-center justify-center px-3.5 py-1.5 rounded-[12px] text-xs font-medium border border-[var(--border)] bg-[var(--surface-white)] text-[var(--text-secondary)] hover:bg-[var(--border-soft)] hover:text-[var(--text-primary)] transition-colors"
+              >
+                รายละเอียด
+              </Link>
+            </div>
 
-        <div className="flex items-center gap-1.5">
-          {isCompleted || isSkipped ? (
-            <button
-              onClick={(e) => handleSetStatus("PENDING", e)}
-              disabled={isPending}
-              className="text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors flex items-center gap-1"
-            >
-              <Undo2 className="w-3.5 h-3.5" />
-              <span>Undo</span>
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={(e) => handleSetStatus("SKIPPED", e)}
-                disabled={isPending}
-                className="text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
-              >
-                ข้ามมื้อ
-              </button>
-              <button
-                onClick={(e) => handleSetStatus("COMPLETED", e)}
-                disabled={isPending}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-xs"
-              >
-                <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>กินแล้ว</span>
-              </button>
-            </>
-          )}
+            {/* Right Action buttons */}
+            <div className="flex items-center gap-2">
+              {isCompleted ? (
+                <>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--green-dark)] bg-[var(--green-soft)] px-3 py-1.5 rounded-[12px]">
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>✓ กินแล้ว</span>
+                  </span>
+                  <button
+                    onClick={(e) => handleSetStatus("PENDING", e)}
+                    disabled={isPending}
+                    className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-[12px] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--border-soft)] transition-colors"
+                  >
+                    <Undo2 className="w-3 h-3" />
+                    <span>Undo</span>
+                  </button>
+                </>
+              ) : isSkipped ? (
+                <>
+                  <span className="text-xs text-[var(--text-muted)] font-medium px-2 py-1">
+                    ข้ามมื้อนี้
+                  </span>
+                  <button
+                    onClick={(e) => handleSetStatus("PENDING", e)}
+                    disabled={isPending}
+                    className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-[12px] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--border-soft)] transition-colors"
+                  >
+                    <Undo2 className="w-3 h-3" />
+                    <span>Undo</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={(e) => handleSetStatus("COMPLETED", e)}
+                  disabled={isPending}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[14px] text-xs font-semibold bg-[var(--green-primary)] text-white hover:bg-[var(--green-dark)] transition-all shadow-xs active:scale-[0.98]"
+                >
+                  <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>กินแล้ว</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

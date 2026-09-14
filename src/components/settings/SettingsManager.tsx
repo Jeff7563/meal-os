@@ -5,15 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
-  User,
-  Clock,
-  Palette,
-  Database,
   Upload,
   Download,
   RotateCcw,
   Check,
   Save,
+  ArrowRight,
 } from "lucide-react";
 import { UserProfile } from "@/types/meal";
 import { saveProfileSettingsAction, resetToDefaultPlanAction } from "@/lib/settings/actions";
@@ -44,7 +41,7 @@ export function SettingsManager({ initialProfile }: SettingsManagerProps) {
         dinnerTime: profile.dinnerTime,
       });
       if (res.success) {
-        toast("บันทึกการตั้งค่าโปรไฟล์เรียบร้อย ✓", "success");
+        toast("บันทึกการตั้งค่าเรียบร้อยแล้ว ✓", "success");
       } else {
         toast("บันทึกล้มเหลว กรุณาลองใหม่", "error");
       }
@@ -73,44 +70,41 @@ export function SettingsManager({ initialProfile }: SettingsManagerProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-28">
-      {/* 1. Profile Settings */}
+    <div className="space-y-6">
+      {/* 1. SECTION: โปรไฟล์ */}
       <form
         onSubmit={handleSaveProfile}
-        className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4"
+        className="p-5 sm:p-6 rounded-[20px] bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-4"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              ข้อมูลส่วนตัว (Profile)
-            </h2>
-          </div>
+        <div className="flex items-center justify-between pb-2 border-b border-[var(--border-soft)]">
+          <h2 className="text-base font-bold text-[var(--text-primary)]">
+            โปรไฟล์
+          </h2>
           <button
             type="submit"
             disabled={isSaving}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-[12px] text-xs font-semibold bg-[var(--green-primary)] text-white hover:bg-[var(--green-dark)] transition-colors shadow-xs"
           >
             <Save className="w-3.5 h-3.5" />
-            <span>{isSaving ? "กำลังบันทึก..." : "บันทึกข้อมูล"}</span>
+            <span>{isSaving ? "กำลังบันทึก..." : "บันทึกโปรไฟล์"}</span>
           </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-300 block mb-1">
+            <label className="text-xs font-medium text-[var(--text-secondary)] block mb-1">
               ชื่อผู้ใช้งาน
             </label>
             <input
               type="text"
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-              className="w-full h-10 px-3 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full h-10 px-3.5 rounded-[14px] text-sm bg-[var(--background-soft)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)]"
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-300 block mb-1">
+            <label className="text-xs font-medium text-[var(--text-secondary)] block mb-1">
               ส่วนสูง (ซม.)
             </label>
             <input
@@ -119,12 +113,12 @@ export function SettingsManager({ initialProfile }: SettingsManagerProps) {
               onChange={(e) =>
                 setProfile({ ...profile, height: parseFloat(e.target.value) || undefined })
               }
-              className="w-full h-10 px-3 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full h-10 px-3.5 rounded-[14px] text-sm bg-[var(--background-soft)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)]"
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-300 block mb-1">
+            <label className="text-xs font-medium text-[var(--text-secondary)] block mb-1">
               น้ำหนักปัจจุบัน (กก.)
             </label>
             <input
@@ -137,13 +131,13 @@ export function SettingsManager({ initialProfile }: SettingsManagerProps) {
                   currentWeight: parseFloat(e.target.value) || undefined,
                 })
               }
-              className="w-full h-10 px-3 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full h-10 px-3.5 rounded-[14px] text-sm bg-[var(--background-soft)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)]"
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-600 dark:text-slate-300 block mb-1">
-              เป้าหมายน้ำหนัก (กก.)
+            <label className="text-xs font-medium text-[var(--text-secondary)] block mb-1">
+              น้ำหนักเป้าหมาย (กก.)
             </label>
             <input
               type="number"
@@ -155,141 +149,132 @@ export function SettingsManager({ initialProfile }: SettingsManagerProps) {
                   goalWeight: parseFloat(e.target.value) || undefined,
                 })
               }
-              className="w-full h-10 px-3 rounded-xl text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full h-10 px-3.5 rounded-[14px] text-sm bg-[var(--background-soft)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)]"
             />
           </div>
         </div>
 
-        {/* Meal Time Preferences */}
-        <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2 mb-3">
-            <Clock className="w-4 h-4 text-emerald-600" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              เวลาอาหารที่แนะนำ
-            </span>
-          </div>
+        {/* 2. SECTION: ตารางเวลา (Meal Times) */}
+        <div className="pt-4 border-t border-[var(--border-soft)]">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-3">
+            ตารางเวลาอาหาร
+          </h3>
 
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="grid grid-cols-3 gap-2.5 text-center">
             <div>
-              <label className="text-[11px] text-slate-500 block mb-1">มื้อเช้า</label>
+              <label className="text-[11px] text-[var(--text-secondary)] block mb-1">เช้า</label>
               <input
                 type="text"
                 value={profile.breakfastTime}
                 onChange={(e) =>
                   setProfile({ ...profile, breakfastTime: e.target.value })
                 }
-                className="w-full h-9 px-2 text-center font-mono rounded-lg text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="w-full h-10 px-2 text-center font-mono rounded-[12px] text-xs bg-[var(--background-soft)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)]"
               />
             </div>
             <div>
-              <label className="text-[11px] text-slate-500 block mb-1">มื้อกลางวัน</label>
+              <label className="text-[11px] text-[var(--text-secondary)] block mb-1">กลางวัน</label>
               <input
                 type="text"
                 value={profile.lunchTime}
                 onChange={(e) => setProfile({ ...profile, lunchTime: e.target.value })}
-                className="w-full h-9 px-2 text-center font-mono rounded-lg text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="w-full h-10 px-2 text-center font-mono rounded-[12px] text-xs bg-[var(--background-soft)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)]"
               />
             </div>
             <div>
-              <label className="text-[11px] text-slate-500 block mb-1">มื้อเย็น</label>
+              <label className="text-[11px] text-[var(--text-secondary)] block mb-1">เย็น</label>
               <input
                 type="text"
                 value={profile.dinnerTime}
                 onChange={(e) => setProfile({ ...profile, dinnerTime: e.target.value })}
-                className="w-full h-9 px-2 text-center font-mono rounded-lg text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                className="w-full h-10 px-2 text-center font-mono rounded-[12px] text-xs bg-[var(--background-soft)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)]"
               />
             </div>
           </div>
         </div>
       </form>
 
-      {/* 2. Theme / Display */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="flex items-center gap-2">
-          <Palette className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            การแสดงผล (Display)
-          </h2>
-        </div>
+      {/* 3. SECTION: หน้าตา (Appearance) */}
+      <div className="p-5 sm:p-6 rounded-[20px] bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-3">
+        <h2 className="text-base font-bold text-[var(--text-primary)]">
+          หน้าตา (ธีม)
+        </h2>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2.5">
           <button
-            onClick={() => setTheme("light")}
-            className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-              theme === "light"
-                ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+            onClick={() => setTheme("system")}
+            className={`p-3 rounded-[14px] border text-xs font-medium flex items-center justify-center gap-1.5 transition-all ${
+              theme === "system"
+                ? "border-[var(--green-primary)] bg-[var(--green-soft)] text-[var(--green-dark)] font-semibold shadow-xs"
+                : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--background-soft)]"
             }`}
           >
-            <span>Light (สว่าง)</span>
+            <span>ระบบ</span>
+            {theme === "system" && <Check className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            onClick={() => setTheme("light")}
+            className={`p-3 rounded-[14px] border text-xs font-medium flex items-center justify-center gap-1.5 transition-all ${
+              theme === "light"
+                ? "border-[var(--green-primary)] bg-[var(--green-soft)] text-[var(--green-dark)] font-semibold shadow-xs"
+                : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--background-soft)]"
+            }`}
+          >
+            <span>สว่าง</span>
             {theme === "light" && <Check className="w-3.5 h-3.5" />}
           </button>
           <button
             onClick={() => setTheme("dark")}
-            className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+            className={`p-3 rounded-[14px] border text-xs font-medium flex items-center justify-center gap-1.5 transition-all ${
               theme === "dark"
-                ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                ? "border-[var(--green-primary)] bg-[var(--green-soft)] text-[var(--green-dark)] font-semibold shadow-xs"
+                : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--background-soft)]"
             }`}
           >
-            <span>Dark (มืด)</span>
+            <span>มืด</span>
             {theme === "dark" && <Check className="w-3.5 h-3.5" />}
-          </button>
-          <button
-            onClick={() => setTheme("system")}
-            className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-              theme === "system"
-                ? "border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
-            }`}
-          >
-            <span>System</span>
-            {theme === "system" && <Check className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
 
-      {/* 3. Data Management (Import, Export, Reset) */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
-        <div className="flex items-center gap-2">
-          <Database className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            จัดการข้อมูลตารางอาหาร (Data Management)
-          </h2>
-        </div>
+      {/* 4. SECTION: ข้อมูลและตารางอาหาร (Data Management) */}
+      <div className="p-5 sm:p-6 rounded-[20px] bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-3">
+        <h2 className="text-base font-bold text-[var(--text-primary)]">
+          ข้อมูลและตารางอาหาร
+        </h2>
 
         <div className="space-y-2 pt-1">
           <Link
             href="/settings/import"
-            className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-all text-xs font-semibold text-slate-800 dark:text-slate-200"
+            className="flex items-center justify-between p-3.5 rounded-[14px] border border-[var(--border)] bg-[var(--background-soft)] hover:border-[var(--green-primary)] transition-all text-xs font-medium text-[var(--text-primary)] group"
           >
             <div className="flex items-center gap-2.5">
-              <Upload className="w-4 h-4 text-emerald-600" />
-              <span>Import Meal Plan (นำเข้าตารางอาหาร JSON จาก AI)</span>
+              <Upload className="w-4 h-4 text-[var(--green-primary)]" />
+              <span>นำเข้าตารางอาหาร</span>
             </div>
-            <span className="text-slate-400">เปิดหน้าต่าง →</span>
+            <ArrowRight className="w-4 h-4 text-[var(--text-muted)] group-hover:text-[var(--green-primary)] group-hover:translate-x-0.5 transition-all" />
           </Link>
 
           <a
             href="/api/export"
             download
-            className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-all text-xs font-semibold text-slate-800 dark:text-slate-200"
+            className="flex items-center justify-between p-3.5 rounded-[14px] border border-[var(--border)] bg-[var(--background-soft)] hover:border-[var(--green-primary)] transition-all text-xs font-medium text-[var(--text-primary)] group"
           >
             <div className="flex items-center gap-2.5">
-              <Download className="w-4 h-4 text-teal-600" />
-              <span>Export Meal Plan (ดาวน์โหลด JSON เก็บไว้)</span>
+              <Download className="w-4 h-4 text-[var(--orange-primary)]" />
+              <span>ส่งออกตารางอาหาร</span>
             </div>
-            <span className="text-slate-400">ดาวน์โหลด ↓</span>
+            <span className="text-[var(--text-muted)] text-[11px]">ดาวน์โหลด JSON ↓</span>
           </a>
 
           <button
             onClick={handleReset}
             disabled={isResetting}
-            className="w-full flex items-center justify-between p-3.5 rounded-xl border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all text-xs font-semibold text-rose-600 dark:text-rose-400"
+            className="w-full flex items-center justify-between p-3.5 rounded-[14px] border border-[#F2D0CA] dark:border-[#4B2824] bg-[#FFF8F7] dark:bg-[#251918] hover:bg-[#FEEAE6] dark:hover:bg-[#33201E] transition-all text-xs font-medium text-[var(--red-text)]"
           >
             <div className="flex items-center gap-2.5">
-              <RotateCcw className="w-4 h-4 text-rose-500" />
-              <span>รีเซ็ตตารางอาหารกลับเป็นค่าเริ่มต้น 7 วัน (Reset Seed)</span>
+              <RotateCcw className="w-4 h-4" />
+              <span>รีเซ็ตตารางอาหารกลับเป็นค่าเริ่มต้น 7 วัน</span>
             </div>
             <span>{isResetting ? "กำลังรีเซ็ต..." : "รีเซ็ต"}</span>
           </button>

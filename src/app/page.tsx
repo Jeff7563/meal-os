@@ -1,11 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import { TopHeader } from "@/components/layout/TopHeader";
-import { MealProgressBar } from "@/components/meal/MealProgressBar";
+import { DailySummary } from "@/components/meal/DailySummary";
 import { MealCard } from "@/components/meal/MealCard";
 import { getMealsForDate, getUserProfile } from "@/lib/repository";
 import { getBangkokTodayString } from "@/lib/date-utils";
-import { Upload, Sparkles, AlertTriangle, Database } from "lucide-react";
+import { Plus, Info, RefreshCw } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -27,28 +27,26 @@ export default async function TodayPage() {
     dbError = err instanceof Error ? err.message : "ไม่สามารถเชื่อมต่อฐานข้อมูลได้";
   }
 
-  // Production Database Error State
+  // Friendly Warm Error State
   if (dbError) {
     return (
-      <div className="max-w-xl mx-auto py-12 px-4 text-center space-y-4">
-        <div className="w-14 h-14 rounded-3xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
-          <Database className="w-7 h-7" />
+      <div className="max-w-md mx-auto py-16 px-4 text-center space-y-4">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--orange-soft)] text-[var(--orange-primary)] flex items-center justify-center mx-auto">
+          <Info className="w-6 h-6" />
         </div>
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-          ไม่สามารถเชื่อมต่อฐานข้อมูลได้
+        <h1 className="text-xl font-bold text-[var(--text-primary)]">
+          มีบางอย่างผิดพลาด
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-          {dbError}
+        <p className="text-xs sm:text-sm text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
+          ตอนนี้ยังโหลดข้อมูลไม่ได้ ลองใหม่อีกครั้งในอีกสักครู่
         </p>
-        <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs font-mono text-left max-w-md mx-auto border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
-          คำแนะนำ: ตรวจสอบการตั้งค่า DATABASE_URL ในไฟล์ .env หรือ Vercel Environment Variables
-        </div>
         <div className="pt-2">
           <Link
             href="/"
-            className="inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[14px] text-xs font-semibold bg-[var(--green-primary)] text-white hover:bg-[var(--green-dark)] transition-colors"
           >
-            ลองใหม่อีกครั้ง (Retry)
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>ลองใหม่อีกครั้ง</span>
           </Link>
         </div>
       </div>
@@ -60,68 +58,68 @@ export default async function TodayPage() {
   const totalCount = meals.length;
 
   return (
-    <div className="space-y-5 pb-24 max-w-xl mx-auto">
-      {/* Dev Mode Banner (only when DB is not configured locally) */}
+    <div className="space-y-6 pb-28 max-w-[920px] mx-auto">
+      {/* Dev Mode Banner (soft and unobtrusive) */}
       {!isDbLive && (
-        <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300 shadow-xs">
-          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
+        <div className="px-4 py-2.5 rounded-[16px] bg-[var(--orange-extra-soft)] border border-[var(--orange-soft)] flex items-center gap-2.5 text-xs text-[var(--text-secondary)]">
+          <Info className="w-4 h-4 shrink-0 text-[var(--orange-primary)]" />
           <span>
-            <strong>โหมดทดลอง (Demo Mode):</strong> ยังไม่ได้เชื่อมต่อ PostgreSQL ข้อมูลมื้ออาหารแสดงเพื่อการทดสอบ UI (เชื่อมต่อ DB เพื่อบันทึกจริง)
+            <strong>โหมดทดลองใช้งาน:</strong> แสดงข้อมูลตัวอย่างสำหรับการทดสอบ UI (เชื่อมต่อฐานข้อมูลเพื่อบันทึกข้อมูลถาวร)
           </span>
         </div>
       )}
 
-      {/* 1. Greeting & Bangkok Date */}
+      {/* 1. Greeting & Hero Anchor "วันนี้กินอะไร" */}
       <TopHeader userName={user?.name} customDate={todayStr} />
 
-      {/* 2. Today's Progress Bar (ตอบคำถามภายใน 3 วินาที) */}
+      {/* 2. Small Daily Summary (Soft card with slim progress bar) */}
       {totalCount > 0 && (
-        <MealProgressBar
+        <DailySummary
           completed={completedCount}
           total={totalCount}
-          title={`ความคืบหน้าวันนี้ (${dayLabel})`}
+          dayLabel={dayLabel}
         />
       )}
 
       {/* 3. Today's Meals Section */}
-      <section className="space-y-3">
+      <section className="space-y-3.5 pt-1">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
+          <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">
             มื้ออาหารของวันนี้ ({totalCount} มื้อ)
           </h2>
           {planName && (
-            <span className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200/50 dark:border-emerald-800/50 line-clamp-1 max-w-[200px]">
+            <span className="text-[11px] font-normal text-[var(--text-secondary)] bg-[var(--background-soft)] px-2.5 py-1 rounded-full border border-[var(--border-soft)] line-clamp-1 max-w-[220px]">
               {planName}
             </span>
           )}
         </div>
 
-        {/* Meal Cards with Optimistic completion and rollback */}
+        {/* Meal Cards */}
         {totalCount > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {meals.map((meal) => (
               <MealCard key={meal.id} meal={meal} dateStr={todayStr} />
             ))}
           </div>
         ) : (
-          /* Empty State */
-          <div className="p-8 text-center rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 mx-auto flex items-center justify-center">
-              <Sparkles className="w-6 h-6" />
+          /* Warm Empty State */
+          <div className="p-10 text-center rounded-[20px] bg-[var(--surface)] border border-[var(--border)] shadow-xs space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--green-extra-soft)] text-[var(--green-primary)] mx-auto flex items-center justify-center">
+              <Plus className="w-6 h-6 stroke-[2]" />
             </div>
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-              ยังไม่มีตารางอาหารสำหรับวันนี้
+            <h3 className="text-base font-bold text-[var(--text-primary)]">
+              วันนี้ยังไม่มีตารางอาหาร
             </h3>
-            <p className="text-xs text-slate-500 max-w-xs mx-auto">
-              คุณสามารถนำเข้าตารางอาหารใหม่ผ่าน JSON จาก ChatGPT หรือเริ่มใช้งานด้วยตารางเริ่มต้น
+            <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto leading-relaxed">
+              เพิ่มตารางอาหารเพื่อเริ่มวางแผนมื้อของวันนี้และดูแลสุขภาพอย่างต่อเนื่อง
             </p>
             <div className="pt-2">
               <Link
                 href="/settings/import"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm shadow-emerald-600/20"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[14px] text-xs font-semibold bg-[var(--green-primary)] text-white hover:bg-[var(--green-dark)] transition-colors shadow-xs"
               >
-                <Upload className="w-4 h-4" />
-                <span>Import Meal Plan</span>
+                <Plus className="w-4 h-4" />
+                <span>เพิ่มตารางอาหาร</span>
               </Link>
             </div>
           </div>

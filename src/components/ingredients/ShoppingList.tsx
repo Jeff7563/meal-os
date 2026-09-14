@@ -5,6 +5,7 @@ import {
   RotateCcw,
   Sparkles,
   Search,
+  Check,
 } from "lucide-react";
 import { ShoppingListItem, ShoppingStatus } from "@/types/meal";
 import { updateShoppingStatusAction, resetShoppingListAction } from "@/lib/shopping/actions";
@@ -55,10 +56,10 @@ export function ShoppingList({ initialItems }: ShoppingListProps) {
   };
 
   const handleReset = () => {
-    if (!confirm("ต้องการรีเซ็ตสถานะรายการช้อปปิ้งทั้งหมดหรือไม่?")) return;
+    if (!confirm("ต้องการรีเซ็ตสถานะรายการวัตถุดิบทั้งหมดใช่หรือไม่?")) return;
     startTransition(async () => {
       await resetShoppingListAction();
-      toast("รีเซ็ตรายการช้อปปิ้งสำเร็จ", "info");
+      toast("รีเซ็ตรายการวัตถุดิบสำเร็จ", "info");
       window.location.reload();
     });
   };
@@ -80,12 +81,14 @@ export function ShoppingList({ initialItems }: ShoppingListProps) {
     categories[cat].push(item);
   }
 
-  const categoryLabels: Record<string, { label: string; color: string }> = {
-    protein: { label: "🥩 โปรตีน (Protein)", color: "text-rose-600 dark:text-rose-400" },
-    vegetable: { label: "🥦 ผักสด (Vegetables)", color: "text-emerald-600 dark:text-emerald-400" },
-    carb: { label: "🍚 คาร์โบไฮเดรต (Carbs)", color: "text-amber-600 dark:text-amber-400" },
-    seasoning: { label: "🧂 เครื่องปรุง (Seasonings)", color: "text-sky-600 dark:text-sky-400" },
-    other: { label: "📦 วัตถุดิบอื่นๆ (Others)", color: "text-slate-600 dark:text-slate-400" },
+  // Ordered Category list
+  const categoryOrder = ["protein", "vegetable", "carb", "seasoning", "other"];
+  const categoryLabels: Record<string, string> = {
+    protein: "โปรตีน",
+    vegetable: "ผัก",
+    carb: "คาร์บ",
+    seasoning: "เครื่องปรุง",
+    other: "อื่น ๆ",
   };
 
   const neededCount = items.filter((i) => i.status === "NEEDED").length;
@@ -93,116 +96,138 @@ export function ShoppingList({ initialItems }: ShoppingListProps) {
   const purchasedCount = items.filter((i) => i.status === "PURCHASED").length;
 
   return (
-    <div className="space-y-6 pb-24">
-      {/* Top Summary Card */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">
-            รายการวัตถุดิบรวมทั้งสัปดาห์
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            รวมวัตถุดิบชื่อเดียวกันและหน่วยเดียวกันโดยอัตโนมัติ
-          </p>
+    <div className="space-y-6">
+      {/* Top Summary Card (Clean Warm Minimal) */}
+      <div className="p-5 rounded-[20px] bg-[var(--surface)] border border-[var(--border)] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-baseline gap-4 sm:gap-6 flex-wrap">
+          <div>
+            <span className="text-xs text-[var(--text-muted)] block">ต้องซื้อ</span>
+            <span className="text-xl sm:text-2xl font-bold text-[var(--orange-primary)]">
+              {neededCount}{" "}
+              <span className="text-xs font-normal text-[var(--text-secondary)]">รายการ</span>
+            </span>
+          </div>
+          <div className="h-8 w-px bg-[var(--border-soft)] hidden sm:block" />
+          <div>
+            <span className="text-xs text-[var(--text-muted)] block">มีแล้ว</span>
+            <span className="text-xl sm:text-2xl font-bold text-[var(--green-dark)]">
+              {haveCount}{" "}
+              <span className="text-xs font-normal text-[var(--text-secondary)]">รายการ</span>
+            </span>
+          </div>
+          {purchasedCount > 0 && (
+            <>
+              <div className="h-8 w-px bg-[var(--border-soft)] hidden sm:block" />
+              <div>
+                <span className="text-xs text-[var(--text-muted)] block">ซื้อแล้ว</span>
+                <span className="text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
+                  {purchasedCount}{" "}
+                  <span className="text-xs font-normal text-[var(--text-secondary)]">รายการ</span>
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleReset}
-            disabled={isPending}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors"
-            title="รีเซ็ตสถานะทั้งหมด"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>รีเซ็ต</span>
-          </button>
-        </div>
+        <button
+          onClick={handleReset}
+          disabled={isPending}
+          className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border-soft)] border border-[var(--border)] transition-colors"
+          title="รีเซ็ตสถานะทั้งหมด"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>รีเซ็ต</span>
+        </button>
       </div>
 
       {/* Filter Tabs & Search */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+        {/* Search Bar: Soft surface, no heavy border */}
+        <div className="relative">
+          <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="ค้นหาวัตถุดิบ..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full h-11 pl-10 pr-4 rounded-[16px] text-sm bg-[var(--surface)] border border-[var(--border)] focus:outline-none focus:border-[var(--green-primary)] placeholder-[var(--text-muted)] transition-colors"
+          />
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setActiveTab("all")}
-            className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`shrink-0 px-3.5 py-1.5 rounded-[12px] text-xs font-medium transition-all ${
               activeTab === "all"
-                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800"
+                ? "bg-[var(--green-primary)] text-white font-semibold shadow-xs"
+                : "bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--background-soft)]"
             }`}
           >
             ทั้งหมด ({items.length})
           </button>
           <button
             onClick={() => setActiveTab("NEEDED")}
-            className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`shrink-0 px-3.5 py-1.5 rounded-[12px] text-xs font-medium transition-all ${
               activeTab === "NEEDED"
-                ? "bg-amber-600 text-white"
-                : "bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 border border-slate-200 dark:border-slate-800"
+                ? "bg-[var(--orange-primary)] text-white font-semibold shadow-xs"
+                : "bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--background-soft)]"
             }`}
           >
             ต้องซื้อ ({neededCount})
           </button>
           <button
             onClick={() => setActiveTab("HAVE")}
-            className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`shrink-0 px-3.5 py-1.5 rounded-[12px] text-xs font-medium transition-all ${
               activeTab === "HAVE"
-                ? "bg-sky-600 text-white"
-                : "bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 border border-slate-200 dark:border-slate-800"
+                ? "bg-[var(--green-dark)] text-white font-semibold shadow-xs"
+                : "bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--background-soft)]"
             }`}
           >
             มีอยู่แล้ว ({haveCount})
           </button>
           <button
             onClick={() => setActiveTab("PURCHASED")}
-            className={`shrink-0 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`shrink-0 px-3.5 py-1.5 rounded-[12px] text-xs font-medium transition-all ${
               activeTab === "PURCHASED"
-                ? "bg-emerald-600 text-white"
-                : "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-800"
+                ? "bg-[var(--green-primary)] text-white font-semibold shadow-xs"
+                : "bg-[var(--surface)] text-[var(--text-secondary)] border border-[var(--border)] hover:bg-[var(--background-soft)]"
             }`}
           >
             ซื้อแล้ว ({purchasedCount})
           </button>
         </div>
-
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="ค้นหาวัตถุดิบ..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-11 pl-10 pr-4 rounded-xl text-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-          />
-        </div>
       </div>
 
       {/* Empty State */}
       {filtered.length === 0 && (
-        <div className="text-center py-16 px-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-          <Sparkles className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-            ไม่มีของที่ต้องซื้อ 🎉
+        <div className="text-center py-16 px-4 rounded-[20px] bg-[var(--surface)] border border-[var(--border)] space-y-2">
+          <Sparkles className="w-8 h-8 text-[var(--orange-primary)] mx-auto mb-2" />
+          <h3 className="text-base font-bold text-[var(--text-primary)]">
+            ยังไม่มีวัตถุดิบที่ต้องซื้อ 🎉
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
-            วัตถุดิบทั้งหมดมีอยู่แล้วหรือได้ซื้อเตรียมไว้เรียบร้อย
+          <p className="text-xs text-[var(--text-secondary)] max-w-xs mx-auto">
+            วัตถุดิบทั้งหมดมีอยู่แล้วหรือได้เตรียมไว้เรียบร้อย
           </p>
         </div>
       )}
 
       {/* Categorized Lists */}
-      {Object.entries(categories).map(([catKey, catItems]) => {
-        const catInfo = categoryLabels[catKey] || categoryLabels.other;
+      {categoryOrder.map((catKey) => {
+        const catItems = categories[catKey];
+        if (!catItems || catItems.length === 0) return null;
+        const catTitle = categoryLabels[catKey] || "อื่น ๆ";
 
         return (
           <div
             key={catKey}
-            className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-sm"
+            className="rounded-[20px] bg-[var(--surface)] border border-[var(--border)] p-4 sm:p-5 shadow-xs"
           >
-            <h3 className={`text-sm font-bold mb-3 ${catInfo.color}`}>
-              {catInfo.label}
+            <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 pb-2 border-b border-[var(--border-soft)]">
+              {catTitle}
             </h3>
 
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            <div className="divide-y divide-[var(--border-soft)]">
               {catItems.map((item, idx) => {
                 const isPurchased = item.status === "PURCHASED";
                 const isHave = item.status === "HAVE";
@@ -212,29 +237,29 @@ export function ShoppingList({ initialItems }: ShoppingListProps) {
                     key={`${item.ingredientName}-${item.unit}-${idx}`}
                     className="py-3 flex items-center justify-between gap-3"
                   >
-                    <div>
-                      <div className="flex items-baseline gap-2">
+                    <div className="min-w-0 pr-2">
+                      <div className="flex items-baseline gap-2 flex-wrap">
                         <span
-                          className={`text-sm font-bold ${
+                          className={`text-sm font-medium ${
                             isPurchased
-                              ? "line-through text-slate-400"
-                              : "text-slate-900 dark:text-white"
+                              ? "line-through text-[var(--text-muted)]"
+                              : "text-[var(--text-primary)]"
                           }`}
                         >
                           {item.ingredientName}
                         </span>
-                        <span className="text-xs font-bold font-mono text-emerald-700 dark:text-emerald-400">
+                        <span className="text-xs font-semibold font-mono text-[var(--green-dark)]">
                           {item.amount} {item.unit}
                         </span>
                       </div>
                       {item.sources && item.sources.length > 1 && (
-                        <p className="text-[11px] text-slate-400 mt-0.5">
-                          (ใช้ใน {item.sources.length} มื้อตลอดทั้งสัปดาห์)
+                        <p className="text-[11px] text-[var(--text-muted)] mt-0.5">
+                          (ใช้ใน {item.sources.length} มื้อตลอดสัปดาห์)
                         </p>
                       )}
                     </div>
 
-                    {/* Status Action Buttons (44px min touch targets) */}
+                    {/* Status Action Buttons */}
                     <div className="flex items-center gap-1.5 shrink-0">
                       <button
                         onClick={() =>
@@ -243,14 +268,15 @@ export function ShoppingList({ initialItems }: ShoppingListProps) {
                             isHave ? "NEEDED" : "HAVE"
                           )
                         }
-                        className={`min-h-[36px] px-2.5 rounded-lg text-xs font-semibold border transition-all ${
+                        className={`min-h-[36px] px-2.5 rounded-[10px] text-xs font-medium border transition-colors flex items-center gap-1 ${
                           isHave
-                            ? "bg-sky-50 text-sky-700 border-sky-300 dark:bg-sky-950 dark:text-sky-300"
-                            : "bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-sky-400"
+                            ? "bg-[var(--green-soft)] text-[var(--green-dark)] border-[var(--green-primary)]/40 font-semibold"
+                            : "bg-[var(--surface-white)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--green-primary)]"
                         }`}
                         title="มีวัตถุดิบนี้อยู่ในตู้เย็นแล้ว"
                       >
-                        {isHave ? "มีแล้ว ✓" : "มีแล้ว"}
+                        {isHave && <Check className="w-3 h-3 stroke-[2.5]" />}
+                        <span>{isHave ? "มีแล้ว ✓" : "มีแล้ว"}</span>
                       </button>
 
                       <button
@@ -260,14 +286,15 @@ export function ShoppingList({ initialItems }: ShoppingListProps) {
                             isPurchased ? "NEEDED" : "PURCHASED"
                           )
                         }
-                        className={`min-h-[36px] px-2.5 rounded-lg text-xs font-semibold border transition-all ${
+                        className={`min-h-[36px] px-2.5 rounded-[10px] text-xs font-medium border transition-colors flex items-center gap-1 ${
                           isPurchased
-                            ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
-                            : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-emerald-500"
+                            ? "bg-[var(--green-primary)] text-white border-[var(--green-primary)] font-semibold shadow-xs"
+                            : "bg-[var(--surface-white)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--green-primary)]"
                         }`}
                         title="ซื้อวัตถุดิบนี้เรียบร้อย"
                       >
-                        {isPurchased ? "ซื้อแล้ว ✓" : "ซื้อแล้ว"}
+                        {isPurchased && <Check className="w-3 h-3 stroke-[2.5]" />}
+                        <span>{isPurchased ? "ซื้อแล้ว ✓" : "ซื้อแล้ว"}</span>
                       </button>
                     </div>
                   </div>

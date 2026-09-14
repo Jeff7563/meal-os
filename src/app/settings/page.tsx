@@ -1,7 +1,8 @@
 import React from "react";
 import { getUserProfile } from "@/lib/repository";
 import { SettingsManager } from "@/components/settings/SettingsManager";
-import { Settings, AlertCircle } from "lucide-react";
+import { Info } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -17,31 +18,36 @@ export default async function SettingsPage() {
 
   if (errorMsg || !profile) {
     return (
-      <div className="max-w-md mx-auto py-12 px-4 text-center space-y-4">
-        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
-        <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+      <div className="max-w-md mx-auto py-16 px-4 text-center space-y-4">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--orange-soft)] text-[var(--orange-primary)] flex items-center justify-center mx-auto">
+          <Info className="w-6 h-6" />
+        </div>
+        <h1 className="text-lg font-bold text-[var(--text-primary)]">
           เกิดข้อผิดพลาดในการโหลดการตั้งค่า
         </h1>
-        <p className="text-xs text-slate-500">{errorMsg || "ไม่สามารถดึงข้อมูลโปรไฟล์ได้"}</p>
+        <p className="text-xs text-[var(--text-secondary)]">{errorMsg || "ไม่สามารถดึงข้อมูลโปรไฟล์ได้"}</p>
+        <div className="pt-2">
+          <Link
+            href="/settings"
+            className="inline-flex items-center px-4 py-2 rounded-[14px] text-xs font-semibold bg-[var(--green-primary)] text-white hover:bg-[var(--green-dark)] transition-colors"
+          >
+            ลองใหม่
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">
-        <div>
-          <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              ตั้งค่า (Settings)
-            </h1>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            จัดการข้อมูลส่วนตัว เวลาอาหาร ธีม และการนำเข้า/ส่งออกข้อมูล
-          </p>
-        </div>
+    <div className="space-y-6 max-w-[760px] mx-auto pb-28">
+      {/* Page Header */}
+      <div className="pt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+          ตั้งค่า
+        </h1>
+        <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-medium mt-1">
+          จัดการข้อมูลส่วนตัว เวลาอาหาร หน้าตา และข้อมูลตารางอาหาร
+        </p>
       </div>
 
       {/* Settings Manager Form */}

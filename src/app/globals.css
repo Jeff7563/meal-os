@@ -1,59 +1,105 @@
 @import "tailwindcss";
 
+@theme {
+  --color-bg: var(--background);
+  --color-bg-soft: var(--background-soft);
+  --color-surface: var(--surface);
+  --color-surface-white: var(--surface-white);
+  --color-border-warm: var(--border);
+  --color-border-warm-soft: var(--border-soft);
+
+  --color-text-warm-primary: var(--text-primary);
+  --color-text-warm-secondary: var(--text-secondary);
+  --color-text-warm-muted: var(--text-muted);
+
+  --color-green-primary: var(--green-primary);
+  --color-green-dark: var(--green-dark);
+  --color-green-soft: var(--green-soft);
+  --color-green-extra-soft: var(--green-extra-soft);
+
+  --color-orange-primary: var(--orange-primary);
+  --color-orange-soft: var(--orange-soft);
+  --color-orange-extra-soft: var(--orange-extra-soft);
+
+  --color-red-soft: var(--red-soft);
+  --color-red-text: var(--red-text);
+
+  --radius-card: 20px;
+  --radius-card-lg: 24px;
+}
+
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #059669;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #1e293b;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #ecfdf5;
-  --accent-foreground: #047857;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #10b981;
-  --radius: 1rem;
+  /* Warm Minimal Light Theme (Default) */
+  --background: #F7F3EB;
+  --background-soft: #FBF8F2;
+
+  --surface: #FFFDF9;
+  --surface-white: #FFFFFF;
+
+  --border: #E9E2D8;
+  --border-soft: #F0EBE4;
+
+  --text-primary: #252522;
+  --text-secondary: #716D66;
+  --text-muted: #99938B;
+
+  --green-primary: #668A62;
+  --green-dark: #496746;
+  --green-soft: #E6EEE2;
+  --green-extra-soft: #F1F6EE;
+
+  --orange-primary: #EBAA42;
+  --orange-soft: #F7DFB5;
+  --orange-extra-soft: #FFF5E3;
+
+  --red-soft: #F9E6E2;
+  --red-text: #A35448;
+
+  --shadow-card: 0 2px 8px rgba(40, 34, 25, 0.03), 0 8px 24px rgba(40, 34, 25, 0.035);
+  --shadow-subtle: 0 1px 3px rgba(40, 34, 25, 0.04);
 }
 
 .dark {
-  --background: #090d16;
-  --foreground: #f8fafc;
-  --card: #111827;
-  --card-foreground: #f8fafc;
-  --popover: #111827;
-  --popover-foreground: #f8fafc;
-  --primary: #10b981;
-  --primary-foreground: #022c22;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #064e3b;
-  --accent-foreground: #a7f3d0;
-  --destructive: #7f1d1d;
-  --destructive-foreground: #fecaca;
-  --border: #1f293d;
-  --input: #1f293d;
-  --ring: #10b981;
+  /* Warm Dark Mode */
+  --background: #181A17;
+  --background-soft: #1E211C;
+
+  --surface: #22251F;
+  --surface-white: #2A2E26;
+
+  --border: #34382F;
+  --border-soft: #2B2E27;
+
+  --text-primary: #F5F3ED;
+  --text-secondary: #BCB8AE;
+  --text-muted: #848076;
+
+  --green-primary: #8AAA82;
+  --green-dark: #A5C59D;
+  --green-soft: #263324;
+  --green-extra-soft: #1E281C;
+
+  --orange-primary: #E7AD55;
+  --orange-soft: #3D2E17;
+  --orange-extra-soft: #2A2114;
+
+  --red-soft: #38201D;
+  --red-text: #E5877A;
+
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 body {
   background-color: var(--background);
-  color: var(--foreground);
+  color: var(--text-primary);
+  font-family: var(--font-thai), var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-tap-highlight-color: transparent;
   min-height: 100vh;
 }
 
-/* Custom Scrollbar for sleek UI */
+/* Custom Scrollbar for Warm Minimal UI */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -62,9 +108,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(150, 150, 150, 0.2);
+  background: rgba(113, 109, 102, 0.2);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(150, 150, 150, 0.4);
+  background: rgba(113, 109, 102, 0.35);
 }

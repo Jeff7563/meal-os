@@ -1,8 +1,9 @@
 import React from "react";
 import { getShoppingItems } from "@/lib/repository";
 import { ShoppingList } from "@/components/ingredients/ShoppingList";
-import { ShoppingCart, AlertCircle } from "lucide-react";
+import { Info } from "lucide-react";
 import { ShoppingListItem } from "@/types/meal";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -18,34 +19,39 @@ export default async function IngredientsPage() {
 
   if (errorMsg) {
     return (
-      <div className="max-w-md mx-auto py-12 px-4 text-center space-y-4">
-        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
-        <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+      <div className="max-w-md mx-auto py-16 px-4 text-center space-y-4">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--orange-soft)] text-[var(--orange-primary)] flex items-center justify-center mx-auto">
+          <Info className="w-6 h-6" />
+        </div>
+        <h1 className="text-lg font-bold text-[var(--text-primary)]">
           เกิดข้อผิดพลาดในการโหลดรายการวัตถุดิบ
         </h1>
-        <p className="text-xs text-slate-500">{errorMsg}</p>
+        <p className="text-xs text-[var(--text-secondary)]">{errorMsg}</p>
+        <div className="pt-2">
+          <Link
+            href="/ingredients"
+            className="inline-flex items-center px-4 py-2 rounded-[14px] text-xs font-semibold bg-[var(--green-primary)] text-white hover:bg-[var(--green-dark)] transition-colors"
+          >
+            ลองใหม่
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-slate-800/80">
-        <div>
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
-              วัตถุดิบ & รายการช้อปปิ้ง (Ingredients)
-            </h1>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            ตรวจเช็กวัตถุดิบที่มีในตู้เย็น และรายการที่ต้องเตรียมซื้อสำหรับสัปดาห์นี้
-          </p>
-        </div>
+    <div className="space-y-6 max-w-[860px] mx-auto pb-28">
+      {/* Page Header */}
+      <div className="pt-1">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+          วัตถุดิบ <span className="text-xs font-normal text-[var(--text-muted)]">& รายการช้อปปิ้ง</span>
+        </h1>
+        <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-medium mt-1">
+          ของที่ต้องใช้สำหรับสัปดาห์นี้
+        </p>
       </div>
 
-      {/* Shopping list interactive component */}
+      {/* Shopping List Component */}
       <ShoppingList initialItems={items} />
     </div>
   );

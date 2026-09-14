@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getMealDetail } from "@/lib/repository";
 import { MealDetailView } from "@/components/meal/MealDetailView";
 import { getBangkokTodayString } from "@/lib/date-utils";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
 
 interface MealDetailPageProps {
   params: Promise<{ id: string }>;
@@ -27,16 +27,18 @@ export default async function MealDetailPage({
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "ไม่สามารถเชื่อมต่อฐานข้อมูลได้";
     return (
-      <div className="max-w-md mx-auto py-12 px-4 text-center space-y-4">
-        <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
-        <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+      <div className="max-w-md mx-auto py-16 px-4 text-center space-y-4">
+        <div className="w-12 h-12 rounded-2xl bg-[var(--orange-soft)] text-[var(--orange-primary)] flex items-center justify-center mx-auto">
+          <Info className="w-6 h-6" />
+        </div>
+        <h1 className="text-lg font-bold text-[var(--text-primary)]">
           เกิดข้อผิดพลาดในการโหลดข้อมูลเมนูอาหาร
         </h1>
-        <p className="text-xs text-slate-500">{msg}</p>
+        <p className="text-xs text-[var(--text-secondary)]">{msg}</p>
         <div className="pt-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[14px] text-xs font-semibold bg-[var(--green-primary)] text-white hover:bg-[var(--green-dark)] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>กลับหน้าหลัก</span>

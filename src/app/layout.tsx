@@ -1,18 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Sans_Thai, Geist } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/toast";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { DesktopSidebar } from "@/components/layout/DesktopSidebar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const thaiFont = IBM_Plex_Sans_Thai({
+  weight: ["300", "400", "500", "600", "700"],
+  subsets: ["thai", "latin"],
+  variable: "--font-thai",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
@@ -34,8 +36,8 @@ export const viewport: Viewport = {
   userScalable: false,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
-    { media: "(prefers-color-scheme: dark)", color: "#090d16" },
+    { media: "(prefers-color-scheme: light)", color: "#F7F3EB" },
+    { media: "(prefers-color-scheme: dark)", color: "#181A17" },
   ],
 };
 
@@ -47,20 +49,20 @@ export default function RootLayout({
   return (
     <html lang="th" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col md:flex-row bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white`}
+        className={`${thaiFont.variable} ${geistSans.variable} antialiased min-h-screen flex flex-col md:flex-row bg-[var(--background)] text-[var(--text-primary)] transition-colors duration-200 selection:bg-[var(--green-soft)] selection:text-[var(--green-dark)]`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
           <ToastProvider>
-            {/* Desktop Left Sidebar */}
+            {/* Desktop Left Sidebar (220-240px) */}
             <DesktopSidebar />
 
             {/* Main Application Content Area */}
-            <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6 overflow-x-hidden">
+            <main className="flex-1 w-full min-h-screen px-4 sm:px-6 lg:px-8 py-4 md:py-8 overflow-x-hidden">
               {children}
             </main>
 
